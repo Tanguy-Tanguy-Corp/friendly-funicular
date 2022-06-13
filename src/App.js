@@ -26,6 +26,7 @@ const RACKSIZE = 7;
 function App() {
 
   const [tiles, setTiles] = useState(initialTiles);
+  const [oldTiles, setOldTiles] = useState(initialTiles)
   const [selectedTile, setSelectedTile] = useState(null);
 
   const [rackTiles, setRackTiles] = useState([]);
@@ -51,7 +52,7 @@ function App() {
         };
       })
     );
-  }, [tiles])
+  }, [tiles]);
 
   // Tiles changes handling
   useEffect(() => {
@@ -61,6 +62,13 @@ function App() {
       event.stopPropagation();
       console.log("clickTile: " + event.target.id);
       const tileId = event.target.id;
+
+      const tile = tiles.find(tile => tile.id === tileId);
+      
+      if (tile.isLocked === true) {
+        console.log('tile locked');
+        return;
+      };
 
       const newTiles = tiles.map(tile => {
         if (tile.id === tileId) {
@@ -103,48 +111,48 @@ function App() {
       const cellX = parseInt(event.target.getAttribute('x'));
       const cellY = parseInt(event.target.getAttribute('y'));
       const pos = parseInt(event.target.dataset.pos);
-      const cellTileId = event.target.dataset.tileid
+      const cellTileId = event.target.dataset.tileid;
 
-      const location = place === 'rack' ? {place:'rack', coords: pos} : {place: 'board', coords: [cellX, cellY]}
+      const location = place === 'rack' ? {place:'rack', coords: pos} : {place: 'board', coords: [cellX, cellY]};
 
       if (selectedTile === null) {
         console.log('no tile selected');
         return;
-      } 
+      } ;
 
       if (cellTileId == null) {
-        setTiles(moveTile(location))
+        setTiles(moveTile(location));
       } else {
-        setTiles(switchTile(location, cellTileId))
-      }
-      setSelectedTile(null)
+        setTiles(switchTile(location, cellTileId));
+      };
+      setSelectedTile(null);
 
     };
 
     const moveTile = (location) => {
-      console.log('moveTile')
+      console.log('moveTile');
       const newTiles = tiles.map(tile => {
         if (tile.id === selectedTile.id) {
-          return { ...tile, isSelected: false, location: location}
-        }
-        return tile
-      })
-      return newTiles
-    }
+          return { ...tile, isSelected: false, location: location};
+        };
+        return tile;
+      });
+      return newTiles;
+    };
 
     const switchTile = (location, cellTileId) => {
-      console.log('switchTile')
+      console.log('switchTile');
       const newTiles = tiles.map(tile => {
         if (tile.id === selectedTile.id) {
-          return { ...tile, isSelected: false, location: location}
-        }
+          return { ...tile, isSelected: false, location: location};
+        };
         if (tile.id === cellTileId) {
-          return { ...tile, isSelected: false, location: selectedTile.location}
-        }
-        return tile
+          return { ...tile, isSelected: false, location: selectedTile.location};
+        };
+        return tile;
       })
-      return newTiles
-    }
+      return newTiles;
+    };
 
     const DOMcells = document.querySelectorAll('.cell');
 
@@ -161,6 +169,24 @@ function App() {
     
   },[selectedTile, tiles]);
 
+  const onReset = () => {
+    setTiles(oldTiles);
+  };
+
+  
+  const onSubmit = () => {
+  
+    const newTiles = tiles.map(tile => {
+      if (tile.location.place === 'board' && tile.isLocked === false) {
+        return { ...tile, isLocked: true };
+      }
+      return tile;
+    })
+
+    setTiles(newTiles);
+    setOldTiles(newTiles);
+  };
+
   return (
     <div className="App">
       <Title>
@@ -168,7 +194,7 @@ function App() {
       </Title>
       <div className="gamearea">
         <Grid size={GRIDSIZE} tiles={boardTiles}/>
-        <Rack size={RACKSIZE} tiles={rackTiles}/>
+        <Rack size={RACKSIZE} tiles={rackTiles} onReset={onReset} onSubmit={onSubmit} />
       </div>
     </div>
   );

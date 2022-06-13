@@ -8,7 +8,7 @@ text-align: center;
 padding: 1em;
 margin: 0.5em;
 border-style: solid;
-border-width: ${props => props.isSelected ? '5px' : '2px'};
+border-width: ${props => props.isLocked ? '3px' : '2px'};
 border-radius: 5px;
 background: ${props => props.isSelected ? 'grey' : 'lightgrey'};
 `
@@ -18,7 +18,7 @@ background: ${props => props.isSelected ? 'grey' : 'lightgrey'};
 const Tile = (props) => {
 
   return (
-    <TileWrapper className='tile' id={props.id} isSelected={props.isSelected}>
+    <TileWrapper className='tile' id={props.id} isSelected={props.isSelected} isLocked={props.isLocked}>
         {props.letter}
     </TileWrapper>
   )

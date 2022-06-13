@@ -17,7 +17,7 @@ const Cell = (props) => {
   return (
     <CellWrapper className='cell' data-place={props.place} data-pos={props.pos} data-tileid={props.tile ? props.tile.id : null} x={props.x} y={props.y}>
       {
-        props.tile && <Tile letter={props.tile.letter} isSelected={props.tile.isSelected} id={props.tile.id}/>
+        props.tile && <Tile letter={props.tile.letter} isSelected={props.tile.isSelected} isLocked={props.tile.isLocked} id={props.tile.id}/>
       }
     </CellWrapper>
   )

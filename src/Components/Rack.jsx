@@ -12,7 +12,7 @@ background: white;
 display: flex;
 `
 
-const Rack = ({ tiles, size }) => {
+const Rack = ({ tiles, size, onReset, onSubmit }) => {
 
   const rackCells = new Array(size**2);
   for (var i=0; i < size; i++) {
@@ -31,6 +31,8 @@ const Rack = ({ tiles, size }) => {
           )
         })
       }
+      <button onClick={onSubmit}>Submit</button>
+      <button onClick={onReset}>Reset</button>
     </RackWrapper>
   )
 }
