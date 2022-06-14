@@ -10,6 +10,7 @@ border-width: 5px;
 border-radius: 20px;
 background: white;
 display: flex;
+justify-content: center;
 `
 
 const Rack = ({ tiles, size, onReset, onSubmit }) => {
