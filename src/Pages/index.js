@@ -1,6 +1,6 @@
-import Home from "./Home";
-import GameBoard from "./GameBoard";
-import GameSelection from "./GameSelection";
-import GameCreation from "./GameCreation";
+import Home from './Home';
+import GameBoard from './GameBoard';
+import GameCreation from './GameCreation';
+import Lobby from './Lobby';
 
-export { Home, GameBoard, GameSelection, GameCreation }
+export { Home, GameBoard, GameCreation, Lobby }

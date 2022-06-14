@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, GameSelection, GameBoard, GameCreation } from './Pages';
+import { Home, GameBoard, GameCreation, Lobby } from './Pages';
 import MainLayout from './Components/MainLayout';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css'
@@ -10,7 +10,7 @@ function App() {
       <MainLayout>
         <Routes>
           <Route exact path='/' element={<Home />} />
-          <Route exact path='selection' element={<GameSelection />} />
+          <Route exact path='lobby' element={<Lobby />} />
           <Route exact path='gameboard' element={<GameBoard />} />
           <Route exact path='creation' element={<GameCreation />} />
         </Routes>
