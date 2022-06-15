@@ -2,18 +2,7 @@ import React, { useState, useEffect } from "react";
 import Grid from "../Components/Grid";
 import Rack from "../Components/Rack";
 import GameInfo from "../Components/GameInfo";
-import { v4 as uuidv4 } from 'uuid';
 import { useCookies } from 'react-cookie';
-
-const initialTiles = [
-  {letter: 'A', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 0}},
-  {letter: 'B', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 1}},
-  {letter: 'C', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 2}},
-  {letter: 'D', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 3}},
-  {letter: 'E', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 4}},
-  {letter: 'F', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 5}},
-  {letter: 'G', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 6}}
-];
 
 const GRIDSIZE = 8;
 const RACKSIZE = 7;
@@ -24,7 +13,7 @@ const Game = () => {
   const [cookies] = useCookies(['gameid']);
 
   const [tiles, setTiles] = useState(null);
-  const [oldTiles, setOldTiles] = useState(initialTiles)
+  const [oldTiles, setOldTiles] = useState(null);
   const [selectedTile, setSelectedTile] = useState(null);
 
   const [rackTiles, setRackTiles] = useState([]);
@@ -47,8 +36,11 @@ const Game = () => {
       console.log(game)
       return game
     }
-    fetchTile().then(game => setTiles(game.tiles))
-  }, [])
+    fetchTile().then(game => {
+      setTiles(game.tiles);
+      setOldTiles(game.tiles);
+    })
+  }, [cookies.gameid])
 
   // Separate rack and board tiles
   useEffect(() => {
@@ -200,6 +192,22 @@ const Game = () => {
       }
       return tile;
     })
+
+    fetch(
+      `${backend_url}/mongodb`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          database: 'ScrabbleClone',
+          collection :'games',
+          Filter: { gameID: cookies.gameid },
+          DataToBeUpdated: { tiles: newTiles }
+        })
+      }
+    )
 
     setTiles(newTiles);
     setOldTiles(newTiles);
