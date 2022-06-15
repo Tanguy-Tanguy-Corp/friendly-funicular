@@ -7,7 +7,10 @@ import { useCookies } from 'react-cookie';
 const GRIDSIZE = 8;
 const RACKSIZE = 7;
 
-const backend_url = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL
+const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL
+console.log(`l'url backend utilisé est: ${backendURL}`)
+const databaseName = process.env.NODE_ENV === 'development' ? 'Development' : 'Production'
+console.log(`la base de données utilisé est: ${databaseName}`)
 
 const Game = () => {
   const [cookies] = useCookies(['gameid']);
@@ -19,17 +22,17 @@ const Game = () => {
   const [rackTiles, setRackTiles] = useState([]);
   const [boardTiles, setBoardTiles] = useState([]);
 
-  // Get the tiles
+  // Get the intital tiles from the database
   useEffect(() => {
     const fetchTile = async () => {
       const response = await fetch(
-        `${backend_url}/games/get`,
+        `${backendURL}/games/get`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({database: 'ScrabbleClone', collection: 'games', Filter: {gameID: cookies.gameid}})
+          body: JSON.stringify({database: databaseName, collection: 'games', Filter: {gameID: cookies.gameid}})
         }
       )
       const game = await response.json()
@@ -192,16 +195,16 @@ const Game = () => {
       }
       return tile;
     })
-
+    // Updating the tiles in the database
     fetch(
-      `${backend_url}/mongodb`,
+      `${backendURL}/mongodb`,
       {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          database: 'ScrabbleClone',
+          database: databaseName,
           collection :'games',
           Filter: { gameID: cookies.gameid },
           DataToBeUpdated: { tiles: newTiles }

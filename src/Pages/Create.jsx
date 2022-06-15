@@ -4,21 +4,33 @@ import { v4 as uuidv4 } from 'uuid';
 
 const { Title } = Typography;
 
-const backend_url = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL
-console.log(backend_url)
+const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL
+console.log(`l'url backend utilisé est: ${backendURL}`)
+const databaseName = process.env.NODE_ENV === 'development' ? 'Development' : 'Production'
+console.log(`la base de données utilisé est: ${databaseName}`)
+
+const initialTiles = [
+  {letter: 'A', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 0}},
+  {letter: 'B', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 1}},
+  {letter: 'C', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 2}},
+  {letter: 'D', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 3}},
+  {letter: 'E', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 4}},
+  {letter: 'F', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 5}},
+  {letter: 'G', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 6}}
+];
 
 const Create = () => {
 
   const subToBackEnd = useCallback(async (gamename, nbPlayers, isPrivate, password) => {
     const gameID =  uuidv4()
     const resp = await fetch(
-      `https://automatic-waffle.herokuapp.com/mongodb`,
+      `${backendURL}/mongodb`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ database: 'ScrabbleClone', collection: 'games',Document:{ gameID, gamename, nbPlayers, isPrivate, password }})
+        body: JSON.stringify({ database: databaseName, collection: 'games', Document:{ gameID, gamename, nbPlayers, isPrivate, password, tiles: initialTiles }})
       }
     )
     if (!resp.ok) {
