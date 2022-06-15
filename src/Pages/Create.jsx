@@ -1,47 +1,48 @@
 import React, { useCallback, useState } from 'react';
 import { Button, Switch, Form, Input, Radio, Typography } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
+import { useNavigate } from "react-router-dom";
+import { useCookies } from 'react-cookie';
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
+
+const formItemLayout = {labelCol: { xs: { span: 24 }, sm: { span: 4 }},wrapperCol: { xs: { span: 24 }, sm: { span: 20 }}};
+const formItemLayoutWithOutLabel = {wrapperCol: {xs: {span: 24, offset: 0}, sm: {span: 20, offset: 4}}};
 
 const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL
 console.log(`l'url backend utilisé est: ${backendURL}`)
 const databaseName = process.env.NODE_ENV === 'development' ? 'Development' : 'Production'
 console.log(`la base de données utilisé est: ${databaseName}`)
 
-const initialTiles = [
-  {letter: 'A', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 0}},
-  {letter: 'B', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 1}},
-  {letter: 'C', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 2}},
-  {letter: 'D', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 3}},
-  {letter: 'E', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 4}},
-  {letter: 'F', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 5}},
-  {letter: 'G', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 6}}
-];
-
 const Create = () => {
+  let navigate = useNavigate()
+  const [cookies, setCookie] = useCookies(['gameid']);
 
   const subToBackEnd = useCallback(async (gamename, nbPlayers, isPrivate, password) => {
     const gameID =  uuidv4()
     const resp = await fetch(
-      `${backendURL}/mongodb`,
+      `${backendURL}/games/create`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ database: databaseName, collection: 'games', Document:{ gameID, gamename, nbPlayers, isPrivate, password, tiles: initialTiles }})
+        body: JSON.stringify({ database: databaseName, collection: 'games', Document:{ gameID, gamename, nbPlayers, isPrivate, password }})
       }
     )
     if (!resp.ok) {
       return setRepStatus(`Error ${resp.status}, Game creation failed`);
     }
     setRepStatus(`Game creation succeed, gameID: ${gameID}`)
+    return gameID
   }, [])
 
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     console.log('Success:', values.name);
-    subToBackEnd(values.name, values.nbPlayers, values.isPrivate, values.password)
+    const gameID = await subToBackEnd(values.name, values.nbPlayers, values.isPrivate, values.password)
+    setCookie('gameid', gameID, { path: '/' });
+    navigate('/game')
   };
 
   const onFinishFailed = (errorInfo) => {
