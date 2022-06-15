@@ -29,7 +29,7 @@ const Grid = ({ tiles, size }) => {
     <BoardWrapper className='grid' size={size}>
       {
         gridCells.map((cell,i) => {
-          const tile = tiles.find(tile => 
+          const tile = tiles?.find(tile => 
             tile.location.coords[0] === cell.x && tile.location.coords[1] === cell.y
           )
           return (

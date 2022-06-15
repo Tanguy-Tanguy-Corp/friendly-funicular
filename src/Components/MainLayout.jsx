@@ -45,14 +45,6 @@ const SiderMenu = () => {
         <Menu.Item key="home" icon={<HomeOutlined />}>
           <Link to="/">Home</Link>
         </Menu.Item>
-
-        <Menu.Item key="gameboard" icon={<LoginOutlined />}>
-          <Link to="gameboard">Join a game</Link>
-        </Menu.Item>
-
-        <Menu.Item key="creation" icon={<UserAddOutlined />}>
-          <Link to="creation">Create new game</Link>
-        </Menu.Item>
         <Menu.Item key="lobby" icon={<UserAddOutlined />}>
           <Link to="lobby">Lobby</Link>
         </Menu.Item>

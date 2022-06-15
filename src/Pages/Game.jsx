@@ -3,6 +3,7 @@ import Grid from "../Components/Grid";
 import Rack from "../Components/Rack";
 import GameInfo from "../Components/GameInfo";
 import { v4 as uuidv4 } from 'uuid';
+import { useCookies } from 'react-cookie';
 
 const initialTiles = [
   {letter: 'A', isSelected: false, id: uuidv4(), isLocked: false, location: { place: 'rack', coords: 0}},
@@ -17,19 +18,42 @@ const initialTiles = [
 const GRIDSIZE = 8;
 const RACKSIZE = 7;
 
-const GameBoard = () => {
+const backend_url = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL
 
-  const [tiles, setTiles] = useState(initialTiles);
+const Game = () => {
+  const [cookies] = useCookies(['gameid']);
+
+  const [tiles, setTiles] = useState(null);
   const [oldTiles, setOldTiles] = useState(initialTiles)
   const [selectedTile, setSelectedTile] = useState(null);
 
   const [rackTiles, setRackTiles] = useState([]);
   const [boardTiles, setBoardTiles] = useState([]);
 
+  // Get the tiles
+  useEffect(() => {
+    const fetchTile = async () => {
+      const response = await fetch(
+        `${backend_url}/games/get`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({database: 'ScrabbleClone', collection: 'games', Filter: {gameID: cookies.gameid}})
+        }
+      )
+      const game = await response.json()
+      console.log(game)
+      return game
+    }
+    fetchTile().then(game => setTiles(game.tiles))
+  }, [])
+
   // Separate rack and board tiles
   useEffect(() => {
     setRackTiles(
-      tiles.filter(tile => {
+      tiles?.filter(tile => {
         if (tile.location.place === 'rack') {
           return true;
         } else {
@@ -38,7 +62,7 @@ const GameBoard = () => {
       })
     );
     setBoardTiles(
-      tiles.filter(tile => {
+      tiles?.filter(tile => {
         if (tile.location.place === 'board') {
           return true;
         } else {
@@ -182,7 +206,8 @@ const GameBoard = () => {
   };
 
   return (
-    <div className="App">
+    <div className="Game">
+      <div>{cookies.gameid}</div>
       <div className="gamearea">
         <GameInfo />
         <Grid size={GRIDSIZE} tiles={boardTiles}/>
@@ -192,4 +217,4 @@ const GameBoard = () => {
   );
 }
 
-export default GameBoard;
+export default Game;

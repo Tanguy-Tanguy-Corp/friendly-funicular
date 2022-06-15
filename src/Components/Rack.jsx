@@ -24,7 +24,7 @@ const Rack = ({ tiles, size, onReset, onSubmit }) => {
     <RackWrapper className='rack'>
       {
         rackCells.map((cell,i) => {
-          const tile = tiles.find(tile => 
+          const tile = tiles?.find(tile => 
             tile.location.coords === cell.pos
           )
           return (

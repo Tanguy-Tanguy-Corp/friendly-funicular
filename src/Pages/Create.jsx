@@ -1,12 +1,16 @@
 import React, { useCallback, useState } from 'react';
-import { Button, Switch, Form, Input, Radio } from 'antd';
+import { Button, Switch, Form, Input, Radio, Typography } from 'antd';
+import { v4 as uuidv4 } from 'uuid';
 
-const backend_url = process.env.BACKEND_URL
+const { Title } = Typography;
+
+const backend_url = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL
 console.log(backend_url)
 
-const GameCreation = () => {
+const Create = () => {
 
   const subToBackEnd = useCallback(async (gamename, nbPlayers, isPrivate, password) => {
+    const gameID =  uuidv4()
     const resp = await fetch(
       `https://automatic-waffle.herokuapp.com/mongodb`,
       {
@@ -14,13 +18,13 @@ const GameCreation = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ database: 'ScrabbleClone', collection: 'games',Document:{ gamename, nbPlayers, isPrivate, password }})
+        body: JSON.stringify({ database: 'ScrabbleClone', collection: 'games',Document:{ gameID, gamename, nbPlayers, isPrivate, password }})
       }
     )
     if (!resp.ok) {
-      return setRepStatus(resp.status);
+      return setRepStatus(`Error ${resp.status}, Game creation failed`);
     }
-    setRepStatus(resp.status)
+    setRepStatus(`Game creation succeed, gameID: ${gameID}`)
   }, [])
 
   const onFinish = (values) => {
@@ -41,6 +45,7 @@ const GameCreation = () => {
 
   return (
     <div>
+      <Title>Create a new game</Title>
       <div>{repStatus}</div>
         <Form name="basic" labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} initialValues={{ remember: true }} onFinish={onFinish} onFinishFailed={onFinishFailed} autoComplete="off">
           <Form.Item label="Game Name" name="name" rules={ [{ required: true, message: 'Please input a game name!' }] }>
@@ -69,4 +74,4 @@ const GameCreation = () => {
   );
 };
 
-export default GameCreation;
+export default Create;

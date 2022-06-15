@@ -1,6 +1,6 @@
 import Home from './Home';
-import GameBoard from './GameBoard';
-import GameCreation from './GameCreation';
+import Game from './Game';
+import Create from './Create';
 import Lobby from './Lobby';
-
-export { Home, GameBoard, GameCreation, Lobby }
+import Join from './Join';
+export { Home, Game, Create, Lobby, Join }
