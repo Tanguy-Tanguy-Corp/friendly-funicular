@@ -10,7 +10,7 @@ border-width: 5px;
 border-radius: 20px;
 background: white;
 display: grid;
-grid-template-columns: repeat(${props => props.size}, 80px);
+grid-template-columns: repeat(${props => props.size}, 50px);
 gap: 0px;
 justify-content: center;
 `

@@ -1,27 +1,24 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Layout, Menu, Typography } from 'antd';
+import { useCookies } from 'react-cookie';
 
 import {
   HomeOutlined,
-  LoginOutlined,
-  LogoutOutlined,
-  UserAddOutlined,
-  DashboardOutlined,
-  PlayCircleOutlined,
-  CommentOutlined
+  UserAddOutlined
 } from '@ant-design/icons';
 
 const { Header, Footer, Sider, Content } = Layout;
 const { Title } = Typography;
 
 const MainLayout = ({ children }) => {
+  
 
   return (
     <>
       <Layout style={{ minHeight: '100vh' }}>
         <Header className="site-layout-background" style={{ padding: 0, textAlign: 'center' }}>
-          <Title level={2} type='warning'>Web App Scrabble</Title>
+          <Title level={2} type='warning'>Scrabbln't</Title>
         </Header>
         <Layout className="site-layout">
           <Content style={{ margin: '16px' }}>
@@ -38,6 +35,7 @@ const MainLayout = ({ children }) => {
 }
 
 const SiderMenu = () => {
+  const [cookies] = useCookies(['gameid'])
 
   return (
     <>
@@ -48,6 +46,9 @@ const SiderMenu = () => {
         <Menu.Item key="lobby" icon={<UserAddOutlined />}>
           <Link to="lobby">Lobby</Link>
         </Menu.Item>
+        {cookies.gameid&&<Menu.Item key="game" icon={<UserAddOutlined />}>
+          <Link to="game">Partie en cours</Link>
+        </Menu.Item>}
       </Menu>
     </>
   )

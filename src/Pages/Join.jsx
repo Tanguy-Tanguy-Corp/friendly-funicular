@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Button, Input, Form, Typography } from 'antd';
 import { useNavigate } from "react-router-dom";
 import { useCookies } from 'react-cookie';
 import useFetch from '../Hooks/useFetch';
 
-const { Title, Text } = Typography;
+const { Title, Text, Link } = Typography;
 
 const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL
 console.log(`l'url backend utilisé est: ${backendURL}`)
@@ -16,7 +16,7 @@ const Join = () => {
   const [cookies, setCookie] = useCookies(['gameid']);
   const [errorMsg, setErrorMsg] = useState(null);
 
-  const { data: games, error: gamesError, isloading: gamesIsLoading } = useFetch(
+  const { data: games, isloading: gamesIsLoading } = useFetch(
     `${backendURL}/games/all`,
     {
       method: 'POST',
@@ -45,8 +45,9 @@ const Join = () => {
   return (
     <div>
       <Title>Rejoindre une partie</Title>
+      {cookies.gameid && <Link href={'/game'} strong type='warning'>{`Attention vous êtes déja dans une partie en cours (game ID: ${cookies.gameid})`}</Link>}
       {gamesIsLoading ?? <div>{games?.map((game, key) => {return <div key={key}>{JSON.stringify({gameID: game.gameID, name: game.gamename})}</div>})}</div>}
-      <Text strong type='warning'>{errorMsg}</Text>
+      <Text strong type='danger'>{errorMsg}</Text>
       <Form name='join-form' onFinish={onFinish} onFinishFailed={onFinishFailed}>
         <Form.Item label='Game ID' name='gameid' rules={[{ required: true, message: 'Please enter the ID of the game'}]}>
           <Input/>

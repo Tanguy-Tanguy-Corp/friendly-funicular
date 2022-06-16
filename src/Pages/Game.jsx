@@ -218,12 +218,12 @@ const Game = () => {
 
   return (
     <div className="Game">
-      <div>{cookies.gameid}</div>
       <div className="gamearea">
         <GameInfo />
         <Grid size={GRIDSIZE} tiles={boardTiles}/>
         <Rack size={RACKSIZE} tiles={rackTiles} onReset={onReset} onSubmit={onSubmit} />
       </div>
+      <div>{`ID: ${cookies.gameid}`}</div>
     </div>
   );
 }
