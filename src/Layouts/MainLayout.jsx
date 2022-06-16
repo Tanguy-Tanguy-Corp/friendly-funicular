@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout, Menu, Typography } from 'antd';
 import { useCookies } from 'react-cookie';
+import { NoBackEndModal } from '../Components';
 
 import {
   HomeOutlined,
@@ -11,10 +12,15 @@ const { Header, Footer, Sider, Content } = Layout;
 const { Title } = Typography;
 
 const MainLayout = ({ children }) => {
+
+  useEffect(() => {
+    
+  }, [])
   
 
   return (
     <>
+      <NoBackEndModal/>
       <Layout style={{ minHeight: '100vh' }}>
         <Header className="site-layout-background" style={{ padding: 0, textAlign: 'center' }}>
           <Title level={2} type='warning'>Scrabbln't</Title>
@@ -41,14 +47,12 @@ const SiderMenu = () => {
   useEffect(() => {
     if (cookies.gameid) {
       setMenuItems([
-        { label: 'Home', key: '', icon: <HomeOutlined />},
-        { label: 'Lobby', key: 'lobby', icon: <HomeOutlined />},
+        { label: 'Acceuil', key: '', icon: <HomeOutlined />},
         { label: 'Partie en cours', key: 'game', icon: <HomeOutlined />}
       ])
     } else {
       setMenuItems([
-        { label: 'Home', key: '', icon: <HomeOutlined />},
-        { label: 'Lobby', key: 'lobby', icon: <HomeOutlined />}
+        { label: 'Home', key: '', icon: <HomeOutlined />}
       ])
     }
   }, [cookies.gameid])

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Home, Game, Create, Lobby, Join } from './Pages';
-import MainLayout from './Components/MainLayout';
+import MainLayout from './Layouts/MainLayout';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css'
 

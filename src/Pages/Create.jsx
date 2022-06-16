@@ -22,6 +22,7 @@ const Create = () => {
   const [cookies, setCookie] = useCookies(['gameid']);
 
   const subToBackEnd = useCallback(async (gameID, gamename, nbPlayers, isPrivate, password) => {
+    
     await fetch(
       `${backendURL}/games/create`,
       {
@@ -29,7 +30,7 @@ const Create = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ database: databaseName, Document:{ gameID, gamename, nbPlayers, isPrivate, password, state: 'waiting' }})
+        body: JSON.stringify({ database: databaseName, Document:{ gameID, gamename, nbPlayers, isPrivate, password }})
       }
     )
   }, [])
