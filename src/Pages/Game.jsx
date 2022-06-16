@@ -201,7 +201,7 @@ const Game = () => {
     // Updating the tiles in the database
     setIsLoading(true)
     await fetch(
-      `${backendURL}/games/create`,
+      `${backendURL}/games/update`,
       {
         method: 'PUT',
         headers: {
