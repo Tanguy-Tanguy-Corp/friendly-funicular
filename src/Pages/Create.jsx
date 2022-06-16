@@ -39,7 +39,7 @@ const Create = () => {
     const gameID =  uuidv4()
     await subToBackEnd(gameID, values.name, values.nbPlayers, values.isPrivate, values.password)
     setCookie('gameid', gameID, { path: '/' });
-    navigate('/game')
+    navigate('/lobby')
   };
 
   const onFinishFailed = (errorInfo) => {

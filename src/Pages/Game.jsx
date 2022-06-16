@@ -171,7 +171,6 @@ const Game = () => {
     };
 
     const DOMcells = document.querySelectorAll('.cell');
-
     DOMcells.forEach(DOMcell => {
       DOMcell.addEventListener('click', clickCell);
     });

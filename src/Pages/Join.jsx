@@ -35,7 +35,7 @@ const Join = () => {
       return
     }
     setCookie('gameid', values.gameid, { path: '/' });
-    navigate('/game')
+    navigate('/lobby')
   };
 
   const onFinishFailed = (errorInfo) => {
