@@ -58,7 +58,7 @@ const Create = () => {
 
   return (
     <div>
-      <Title>Create a new game</Title>
+      <Title>Créer une nouvelle partie</Title>
       <div>{repStatus}</div>
         <Form name="basic" labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} initialValues={{ remember: true }} onFinish={onFinish} onFinishFailed={onFinishFailed} autoComplete="off">
           <Form.Item label="Game Name" name="name" rules={ [{ required: true, message: 'Please input a game name!' }] }>
@@ -79,7 +79,7 @@ const Create = () => {
           </Form.Item>}
         <Form.Item wrapperCol={{ offset: 4, span: 16 }}>
           <Button type="primary" htmlType="submit">
-            Submit
+            Créer
           </Button>
         </Form.Item>
       </Form>
