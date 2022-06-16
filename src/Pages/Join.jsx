@@ -46,7 +46,7 @@ const Join = () => {
     <div>
       <Title>Rejoindre une partie</Title>
       {cookies.gameid && <Link href={'/game'} strong type='warning'>{`Attention vous êtes déja dans une partie en cours (game ID: ${cookies.gameid})`}</Link>}
-      {gamesIsLoading ?? <div>{games?.map((game, key) => {return <div key={key}>{JSON.stringify({gameID: game.gameID, name: game.gamename})}</div>})}</div>}
+      {gamesIsLoading ?? <div>{games?.map((game, key) => {return <div key={key}>{`Game ID: ${game.gameID}, Game Name: ${game.gamename}`}</div>})}</div>}
       <Text strong type='danger'>{errorMsg}</Text>
       <Form name='join-form' onFinish={onFinish} onFinishFailed={onFinishFailed}>
         <Form.Item label='Game ID' name='gameid' rules={[{ required: true, message: 'Please enter the ID of the game'}]}>
