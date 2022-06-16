@@ -16,13 +16,13 @@ const GameInfo = () => {
   return (
     <GameInfoDiv>
       <div>
-        Pseudo: Player 1 VS Player 2
+        Player 1 VS Player 2
       </div>
       <div>
         Score: 100
       </div>
       <div>
-        Timer 10:00
+        Temps restant 10:00
       </div>
     </GameInfoDiv>
   )

@@ -15,6 +15,8 @@ console.log(`la base de données utilisé est: ${databaseName}`)
 const Game = () => {
   const [cookies] = useCookies(['gameid']);
 
+  const [isLoading, setIsLoading] = useState(false)
+
   const [tiles, setTiles] = useState(null);
   const [oldTiles, setOldTiles] = useState(null);
   const [selectedTile, setSelectedTile] = useState(null);
@@ -25,6 +27,7 @@ const Game = () => {
   // Get the intital tiles from the database
   useEffect(() => {
     const fetchTile = async () => {
+      setIsLoading(true)
       const response = await fetch(
         `${backendURL}/games/get`,
         {
@@ -32,10 +35,10 @@ const Game = () => {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({database: databaseName, collection: 'games', Filter: {gameID: cookies.gameid}})
+          body: JSON.stringify({database: databaseName, Filter: {gameID: cookies.gameid}})
         }
       )
-      const game = await response.json()
+      const game = await response.json().then(setIsLoading(false))
       console.log(game)
       return game
     }
@@ -187,7 +190,7 @@ const Game = () => {
   };
 
   
-  const onSubmit = () => {
+  const onSubmit = async () => {
   
     const newTiles = tiles.map(tile => {
       if (tile.location.place === 'board' && tile.isLocked === false) {
@@ -196,8 +199,9 @@ const Game = () => {
       return tile;
     })
     // Updating the tiles in the database
-    fetch(
-      `${backendURL}/mongodb`,
+    setIsLoading(true)
+    await fetch(
+      `${backendURL}/games/create`,
       {
         method: 'PUT',
         headers: {
@@ -205,12 +209,12 @@ const Game = () => {
         },
         body: JSON.stringify({
           database: databaseName,
-          collection :'games',
           Filter: { gameID: cookies.gameid },
           DataToBeUpdated: { tiles: newTiles }
         })
       }
     )
+    setIsLoading(false)
 
     setTiles(newTiles);
     setOldTiles(newTiles);
@@ -221,7 +225,7 @@ const Game = () => {
       <div className="gamearea">
         <GameInfo />
         <Grid size={GRIDSIZE} tiles={boardTiles}/>
-        <Rack size={RACKSIZE} tiles={rackTiles} onReset={onReset} onSubmit={onSubmit} />
+        <Rack size={RACKSIZE} tiles={rackTiles} onReset={onReset} onSubmit={onSubmit} isLoading={isLoading}/>
       </div>
       <div>{`ID: ${cookies.gameid}`}</div>
     </div>

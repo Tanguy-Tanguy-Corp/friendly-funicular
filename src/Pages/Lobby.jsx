@@ -24,10 +24,10 @@ const Lobby = () => {
       </Title>
       <ButtonDiv>
         <Button type="primary" shape="round" size='large' onClick={onJoin}>
-          Join Existing Game
+          Rejoindre une partie
         </Button>
         <Button type="primary" shape="round" size='large' onClick={onCreate}>
-          Create New Game
+          Créer une partie
         </Button>
       </ButtonDiv>
     </div>

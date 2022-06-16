@@ -23,7 +23,7 @@ const Join = () => {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({database: databaseName, collection: 'games'})
+      body: JSON.stringify({ database: databaseName })
     }
   )
 

@@ -29,7 +29,7 @@ const Create = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ database: databaseName, collection: 'games', Document:{ gameID, gamename, nbPlayers, isPrivate, password, state: 'waiting' }})
+        body: JSON.stringify({ database: databaseName, Document:{ gameID, gamename, nbPlayers, isPrivate, password, state: 'waiting' }})
       }
     )
   }, [])
