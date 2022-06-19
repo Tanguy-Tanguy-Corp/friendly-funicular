@@ -12,6 +12,7 @@ const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_AP
 const databaseName = process.env.NODE_ENV === 'development' ? 'Development' : 'Production';
 
 const Game = () => {
+  
   const socket = useContext(SocketContext);
 
   useEffect(() => {
