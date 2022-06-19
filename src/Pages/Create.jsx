@@ -3,13 +3,13 @@ import { Button, Switch, Form, Input, Radio, Typography } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from "react-router-dom";
 import { useCookies } from 'react-cookie';
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+//import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import './Create.css';
 
 const { Title, Link } = Typography;
 
-const formItemLayout = {labelCol: { xs: { span: 24 }, sm: { span: 4 }},wrapperCol: { xs: { span: 24 }, sm: { span: 20 }}};
-const formItemLayoutWithOutLabel = {wrapperCol: {xs: {span: 24, offset: 4}, sm: {span: 24, offset: 4}}};
+//const formItemLayout = {labelCol: { xs: { span: 24 }, sm: { span: 4 }},wrapperCol: { xs: { span: 24 }, sm: { span: 20 }}};
+//const formItemLayoutWithOutLabel = {wrapperCol: {xs: {span: 24, offset: 4}, sm: {span: 24, offset: 4}}};
 
 const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL
 console.log(`l'url backend utilisé est: ${backendURL}`)
@@ -68,7 +68,7 @@ const Create = () => {
               <Radio.Button value="4">4</Radio.Button>
           </Radio.Group>
           </Form.Item>
-          <Form.List name="players" rules={[{ validator: async (_, names) => {if (!names || names.length < 2) { return Promise.reject(new Error('2 Joueurs minimum'))}}}]}>
+          {/*<Form.List name="players" rules={[{ validator: async (_, names) => {if (!names || names.length < 2) { return Promise.reject(new Error('2 Joueurs minimum'))}}}]}>
             {(fields, { add, remove }, { errors }) => (
             <>
               {fields.map((field, index) => (
@@ -89,7 +89,7 @@ const Create = () => {
               </Form.Item>
             </>
             )}
-          </Form.List>
+          </Form.List>*/}
           <Form.Item label='Private' name="isPrivate" valuePropName="checked" wrapperCol={{ offset: 0, span: 16 }}>
             <Switch disabled onChange={onPrivateChange}/>
           </Form.Item>

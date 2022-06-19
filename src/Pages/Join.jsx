@@ -16,8 +16,8 @@ const Join = () => {
   const [cookies, setCookie] = useCookies(['gameid']);
   const [errorMsg, setErrorMsg] = useState(null);
 
-  const { data: games, isloading: gamesIsLoading } = useFetch(
-    `${backendURL}/games/all`,
+  const { data: gamesInfo, isloading: gamesInfoIsLoading } = useFetch(
+    `${backendURL}/games/info/all`,
     {
       method: 'POST',
       headers: {
@@ -29,7 +29,7 @@ const Join = () => {
 
   const onFinish = (values) => {
     console.log('Success:', values.gameid);
-    const gameIDs = games.map(game => game.gameID)
+    const gameIDs = gamesInfo.map(gameInfo => gameInfo.gameID)
     if (!gameIDs.includes(values.gameid)) {
       setErrorMsg("Cette partie n'existe pas")
       return
@@ -46,7 +46,7 @@ const Join = () => {
     <div>
       <Title>Rejoindre une partie</Title>
       {cookies.gameid && <Link href={'/game'} strong type='warning'>{`Attention vous êtes déja dans une partie en cours (game ID: ${cookies.gameid})`}</Link>}
-      {gamesIsLoading ?? <div>{games?.map((game, key) => {return <div key={key}>{`Game ID: ${game.gameID}, Game Name: ${game.gamename}`}</div>})}</div>}
+      {gamesInfoIsLoading ?? <div>{gamesInfo?.map((gameInfo, key) => {return <div key={key}>{`Game ID: ${gameInfo.gameID}, Game Name: ${gameInfo.gameName}`}</div>})}</div>}
       <Text strong type='danger'>{errorMsg}</Text>
       <Form name='join-form' onFinish={onFinish} onFinishFailed={onFinishFailed}>
         <Form.Item label='Game ID' name='gameid' rules={[{ required: true, message: 'Please enter the ID of the game'}]}>

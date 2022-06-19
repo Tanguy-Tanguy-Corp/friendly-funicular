@@ -58,7 +58,7 @@ const SiderMenu = () => {
   }, [cookies.gameid])
 
   const onClick = (e) => {
-    console.log('click', e);
+    //console.log('click', e);
     navigate(`/${e.key}`)
   }
 

@@ -13,6 +13,7 @@ const Lobby = () => {
   const [gameLoading, setGameLoading] = useState(false);
   const [game, setGame] = useState(null);
   const [cookies] = useCookies(['gameid']);
+  const [whoIAm, setWhoIAm] = useState(null);
   let navigate = useNavigate();
 
   const onStart = () => {
@@ -66,6 +67,11 @@ const Lobby = () => {
       <Text>
         {`Noms des joueurs: ${game && game.players}`}
       </Text>
+      </div>
+      <div>
+        {game && game.players.map((player,key) => {
+          return(<Button key={key}>{player}</Button>)
+        })}
       </div>
       <Button type="primary" shape="round" size='large' onClick={onStart} loading={gameLoading}>
         Commencer la partie

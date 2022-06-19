@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { SocketContext } from "../Contexts/socketIOContext";
 import Grid from "../Components/Grid";
 import Rack from "../Components/Rack";
 import GameInfo from "../Components/GameInfo";
@@ -7,12 +8,19 @@ import { useCookies } from 'react-cookie';
 const GRIDSIZE = 8;
 const RACKSIZE = 7;
 
-const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL
-console.log(`l'url backend utilisé est: ${backendURL}`)
-const databaseName = process.env.NODE_ENV === 'development' ? 'Development' : 'Production'
-console.log(`la base de données utilisé est: ${databaseName}`)
+const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL;
+const databaseName = process.env.NODE_ENV === 'development' ? 'Development' : 'Production';
 
 const Game = () => {
+  const socket = useContext(SocketContext);
+
+  useEffect(() => {
+    socket.emit('my_broadcast_event', {data: 'prout'});
+    socket.on('whoami', (data) => {
+      console.log(data)
+    })
+  }, [socket])
+
   const [cookies] = useCookies(['gameid']);
 
   const [isLoading, setIsLoading] = useState(false)
@@ -39,7 +47,7 @@ const Game = () => {
         }
       )
       const game = await response.json().then(setIsLoading(false))
-      console.log(game)
+      //console.log(game)
       return game
     }
     fetchTile().then(game => {
@@ -73,7 +81,7 @@ const Game = () => {
   // Tiles changes handling
   useEffect(() => {
 
-    const clickTile = event => {
+    const clickTile = (event) => {
       // Avoid propagation to parent target
       event.stopPropagation();
       console.log("clickTile: " + event.target.id);
@@ -120,7 +128,7 @@ const Game = () => {
   // Cells changes handling
   useEffect(() => {
 
-    const clickCell = event => {
+    const clickCell = (event) => {
       // Avoid propagation to parent target
       event.stopPropagation();
       const place = event.target.dataset.place;
