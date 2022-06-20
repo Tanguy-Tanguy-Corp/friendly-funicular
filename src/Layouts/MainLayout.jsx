@@ -6,6 +6,7 @@ import { NoBackEndModal } from '../Components';
 
 import {
   HomeOutlined,
+  CommentOutlined,
 } from '@ant-design/icons';
 
 const { Header, Footer, Sider, Content } = Layout;
@@ -41,23 +42,24 @@ const MainLayout = ({ children }) => {
 
 const SiderMenu = () => {
   const [menuItems, setMenuItems] = useState([])
-  const [cookies] = useCookies(['gameid']);
+  const [cookies] = useCookies(['gameid', 'dev']);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (cookies.gameid) {
       setMenuItems([
         { label: 'Acceuil', key: '', icon: <HomeOutlined />},
-        { label: 'Partie en cours', key: 'game', icon: <HomeOutlined />},
-        { label: 'SocketIO Test', key: 'socket', icon: <HomeOutlined />}
+        { label: 'Partie en cours', key: 'game', icon: <HomeOutlined />}
       ])
     } else {
       setMenuItems([
-        { label: 'Acceuil', key: '', icon: <HomeOutlined />},
-        { label: 'SocketIO Test', key: 'socket', icon: <HomeOutlined />}
+        { label: 'Acceuil', key: '', icon: <HomeOutlined />}
       ])
     }
-  }, [cookies.gameid])
+    if (cookies.dev === 'true') {
+      setMenuItems(oldItems => [...oldItems, { label: 'SocketIO Test', key: 'socket', icon: <CommentOutlined />}])
+    }
+  }, [cookies])
 
   const onClick = (e) => {
     //console.log('click', e);

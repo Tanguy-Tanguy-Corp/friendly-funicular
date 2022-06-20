@@ -16,8 +16,6 @@ const Game = () => {
   const socket = useContext(SocketContext);
 
   useEffect(() => {
-    socket.emit('my_broadcast_event', {data: 'prout'});
-
     const listener = (data) => {console.log(data)}
     socket.on('connecto', listener);
 
@@ -232,15 +230,9 @@ const Game = () => {
     setOldTiles(newTiles);
   };
 
-  const testWhoami = () => {
-    console.log('whoami clicked')
-    socket.emit('connecto')
-  }
-
   return (
     <div className="Game">
       <div className="gamearea">
-        <button onClick={testWhoami}>Test Whoami</button>
         <GameInfo />
         <Grid size={GRIDSIZE} tiles={boardTiles}/>
         <Rack size={RACKSIZE} tiles={rackTiles} onReset={onReset} onSubmit={onSubmit} isLoading={isLoading}/>
