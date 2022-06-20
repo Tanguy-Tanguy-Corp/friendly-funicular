@@ -4,12 +4,29 @@ import Grid from "../Components/Grid";
 import Rack from "../Components/Rack";
 import GameInfo from "../Components/GameInfo";
 import { useCookies } from 'react-cookie';
+import { message } from "antd";
 
 const GRIDSIZE = 8;
 const RACKSIZE = 7;
 
 const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL;
 const databaseName = process.env.NODE_ENV === 'development' ? 'Development' : 'Production';
+
+const submitInfo = () => {
+  message.success('Coup validé')
+}
+
+// const yourTurn = () => {
+//   message.info('A vous de jouer')
+// }
+
+// const notYourTurn = () => {
+//   message.error("Ce n'est pas votre tour")
+// }
+
+const lockedTile = () => {
+  message.warning("Tuile verrouillée")
+}
 
 const Game = () => {
 
@@ -94,6 +111,7 @@ const Game = () => {
       
       if (tile.isLocked === true) {
         console.log('tile locked');
+        lockedTile();
         return;
       };
 
@@ -225,6 +243,7 @@ const Game = () => {
       }
     )
     setIsLoading(false)
+    submitInfo()
 
     setTiles(newTiles);
     setOldTiles(newTiles);
