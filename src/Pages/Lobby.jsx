@@ -5,15 +5,12 @@ import { useCookies } from 'react-cookie';
 const { Title, Text } = Typography;
 
 const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL
-console.log(`l'url backend utilisé est: ${backendURL}`)
 const databaseName = process.env.NODE_ENV === 'development' ? 'Development' : 'Production'
-console.log(`la base de données utilisé est: ${databaseName}`)
 
 const Lobby = () => {
   const [gameLoading, setGameLoading] = useState(false);
   const [game, setGame] = useState(null);
   const [cookies] = useCookies(['gameid']);
-  const [whoIAm, setWhoIAm] = useState(null);
   let navigate = useNavigate();
 
   const onStart = () => {

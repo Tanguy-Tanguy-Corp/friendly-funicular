@@ -12,13 +12,17 @@ const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_AP
 const databaseName = process.env.NODE_ENV === 'development' ? 'Development' : 'Production';
 
 const Game = () => {
-  
+
   const socket = useContext(SocketContext);
 
   useEffect(() => {
     socket.emit('my_broadcast_event', {data: 'prout'});
-    socket.on('whoami', (data) => {
-      console.log(data)
+
+    const listener = (data) => {console.log(data)}
+    socket.on('connecto', listener);
+
+    return (() => {
+      socket.off('connecto', listener)
     })
   }, [socket])
 
@@ -228,9 +232,15 @@ const Game = () => {
     setOldTiles(newTiles);
   };
 
+  const testWhoami = () => {
+    console.log('whoami clicked')
+    socket.emit('connecto')
+  }
+
   return (
     <div className="Game">
       <div className="gamearea">
+        <button onClick={testWhoami}>Test Whoami</button>
         <GameInfo />
         <Grid size={GRIDSIZE} tiles={boardTiles}/>
         <Rack size={RACKSIZE} tiles={rackTiles} onReset={onReset} onSubmit={onSubmit} isLoading={isLoading}/>

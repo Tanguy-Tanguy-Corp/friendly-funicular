@@ -48,11 +48,13 @@ const SiderMenu = () => {
     if (cookies.gameid) {
       setMenuItems([
         { label: 'Acceuil', key: '', icon: <HomeOutlined />},
-        { label: 'Partie en cours', key: 'game', icon: <HomeOutlined />}
+        { label: 'Partie en cours', key: 'game', icon: <HomeOutlined />},
+        { label: 'SocketIO Test', key: 'socket', icon: <HomeOutlined />}
       ])
     } else {
       setMenuItems([
-        { label: 'Home', key: '', icon: <HomeOutlined />}
+        { label: 'Acceuil', key: '', icon: <HomeOutlined />},
+        { label: 'SocketIO Test', key: 'socket', icon: <HomeOutlined />}
       ])
     }
   }, [cookies.gameid])

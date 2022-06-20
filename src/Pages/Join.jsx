@@ -7,9 +7,7 @@ import useFetch from '../Hooks/useFetch';
 const { Title, Text, Link } = Typography;
 
 const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL
-console.log(`l'url backend utilisé est: ${backendURL}`)
 const databaseName = process.env.NODE_ENV === 'development' ? 'Development' : 'Production'
-console.log(`la base de données utilisé est: ${databaseName}`)
 
 const Join = () => {
   let navigate = useNavigate()
