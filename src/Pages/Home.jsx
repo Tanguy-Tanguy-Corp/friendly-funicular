@@ -1,8 +1,9 @@
-import React , { useContext }from 'react'
+import React from 'react'
 import { useNavigate } from "react-router-dom";
 import { Button, Typography } from 'antd'
+import { PlayerCreateCard } from '../Components';
 import styled from 'styled-components';
-import { UserContext } from '../Contexts/userContext';
+import { useCookies } from 'react-cookie';
 const { Title } = Typography;
 
 const ButtonDiv = styled.div`
@@ -12,7 +13,7 @@ justify-content: space-evenly;
 
 const Home = () => {
 
-  const user = useContext(UserContext)
+  const [cookies] = useCookies(['player'])
 
   let navigate = useNavigate();
   const onCreate = () => {
@@ -21,15 +22,20 @@ const Home = () => {
   const onJoin = () => {
     navigate('/join')
   }
+
+  React.useEffect(() => {
+    console.log('home')
+  }, [])
+  
   return (
     <div>
     <Title>Bienvenue à Scrabbln't</Title>
-    <Title>{user.userName}</Title>
+    <PlayerCreateCard/>
     <ButtonDiv>
-      <Button type="primary" shape="round" size='large' onClick={onCreate}>
+      <Button type="primary" shape="round" size='large' onClick={onCreate} disabled={!cookies.player}>
         Créer une partie
       </Button>
-      <Button type="primary" shape="round" size='large' onClick={onJoin}>
+      <Button type="primary" shape="round" size='large' onClick={onJoin} disabled={!cookies.player}>
         Rejoindre une partie
       </Button>
     </ButtonDiv>

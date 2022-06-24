@@ -9,9 +9,7 @@ const NoBackEndModal = () => {
   useEffect(() => {
     const fetchBackEnd = async () => {
       try {
-      await fetch(
-        `${backendURL}`, { method: 'GET' }
-      )
+      await fetch(`${backendURL}`)
       } catch (error) {
         console.log(error)
         setIsBackEndUp(false)

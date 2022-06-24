@@ -1,33 +1,45 @@
-import React, { useState } from 'react'
-import { Button, Input, Form, Typography } from 'antd';
+import React, { useState, useCallback, useEffect } from 'react'
+import { Button, Input, Form, Typography, Spin, Space } from 'antd';
 import { useNavigate } from "react-router-dom";
 import { useCookies } from 'react-cookie';
-import useFetch from '../Hooks/useFetch';
+import API from '../services/API';
 
-const { Title, Text, Link } = Typography;
+const { Title, Text } = Typography;
 
-const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL
-const databaseName = process.env.NODE_ENV === 'development' ? 'Development' : 'Production'
 
 const Join = () => {
   let navigate = useNavigate()
-  const [cookies, setCookie] = useCookies(['gameid']);
+  // eslint-disable-next-line no-unused-vars
+  const [cookies, setCookie] = useCookies(['gameid', 'player']);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [infos, setInfos] = useState(null);
+  const [infosLoading, setInfosLoading] = useState(true)
 
-  const { data: gamesInfo, isloading: gamesInfoIsLoading } = useFetch(
-    `${backendURL}/games/info/all`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ database: databaseName })
+  // Redirect to home, if necessary cookies are missing
+  useEffect(() => {
+    if (!cookies.player) {
+      navigate('/');
+      return;
     }
-  )
+  }, [cookies, navigate])
+
+  const fetchGameInfos = useCallback(() => {
+    setInfosLoading(true)
+    API.get('games/info')
+      .then(res => {
+        setInfos(res.data)
+        setInfosLoading(false)
+      })
+  }, [])
+
+  useEffect(() => {
+    fetchGameInfos()
+  }, [fetchGameInfos])
+  
 
   const onFinish = (values) => {
     console.log('Success:', values.gameid);
-    const gameIDs = gamesInfo.map(gameInfo => gameInfo.gameID)
+    const gameIDs = infos.map(gameInfo => gameInfo.gameID)
     if (!gameIDs.includes(values.gameid)) {
       setErrorMsg("Cette partie n'existe pas")
       return
@@ -40,14 +52,40 @@ const Join = () => {
     console.log('Failed:', errorInfo);
   };
 
+  const onClickGame = (e) => {
+    let gameID = ''
+    if (e.target.tagName === 'SPAN') {
+      gameID = e.target.parentElement.id
+      console.log(gameID)
+    } else {
+      gameID = e.target.id
+      console.log(gameID)
+    }
+    setCookie('gameid', gameID, { path: '/' });
+    navigate('/lobby')
+  }
+
   return (
     <div>
       <Title>Rejoindre une partie</Title>
-      {cookies.gameid && <Link href={'/game'} strong type='warning'>{`Attention vous êtes déja dans une partie en cours (game ID: ${cookies.gameid})`}</Link>}
-      {gamesInfoIsLoading ?? <div>{gamesInfo?.map((gameInfo, key) => {return <div key={key}>{`Game ID: ${gameInfo.gameID}, Game Name: ${gameInfo.gameName}`}</div>})}</div>}
+      {
+      infosLoading
+      ?
+      <Spin/>
+      :
+      <div>
+        <Space>
+        {
+          infos?.map((info, index) => {
+            return(<Button key={index} id={info?.gameID} onClick={onClickGame}>{info?.gameName}</Button>)
+          })
+        }
+        </Space>
+      </div>
+      }
       <Text strong type='danger'>{errorMsg}</Text>
       <Form name='join-form' onFinish={onFinish} onFinishFailed={onFinishFailed}>
-        <Form.Item label='Game ID' name='gameid' rules={[{ required: true, message: 'Please enter the ID of the game'}]}>
+        <Form.Item label='Game ID' name='gameid' rules={[{ required: true, message: "Veuillez renseigner l'identifiant de la partie"}]}>
           <Input/>
         </Form.Item>
         <Form.Item wrapperCol={{ span: 2 }}>

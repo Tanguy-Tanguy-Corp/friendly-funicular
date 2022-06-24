@@ -1,79 +1,72 @@
 import React, { useState, useEffect, useContext } from "react";
 import { SocketContext } from "../Contexts/socketIOContext";
-import Grid from "../Components/Grid";
-import Rack from "../Components/Rack";
+import { Grid, Rack } from "../Components";
 import GameInfo from "../Components/GameInfo";
 import { useCookies } from 'react-cookie';
-import { message } from "antd";
+import { submitMove, validMove, illegalMove, yourTurn, notYourTurn, lockedTile, noChanges } from '../Helpers/gameMessages'
+import { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import API from "../services/API";
+
+
 
 const GRIDSIZE = 8;
 const RACKSIZE = 7;
 
-const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL;
-const databaseName = process.env.NODE_ENV === 'development' ? 'Development' : 'Production';
-
-const submitInfo = () => {
-  message.success('Coup validé')
-}
-
-// const yourTurn = () => {
-//   message.info('A vous de jouer')
-// }
-
-// const notYourTurn = () => {
-//   message.error("Ce n'est pas votre tour")
-// }
-
-const lockedTile = () => {
-  message.warning("Tuile verrouillée")
-}
-
 const Game = () => {
 
   const socket = useContext(SocketContext);
+  let navigate = useNavigate();
+  
+  const [cookies] = useCookies(['gameid', 'player']);
 
+  // Redirect to home, if necessary cookies are missing
   useEffect(() => {
-    const listener = (data) => {console.log(data)}
-    socket.on('connecto', listener);
-
-    return (() => {
-      socket.off('connecto', listener)
-    })
-  }, [socket])
-
-  const [cookies] = useCookies(['gameid']);
+    if (!cookies.player || !cookies.gameid) {
+      navigate('/')
+    }
+  }, [cookies, navigate])
 
   const [isLoading, setIsLoading] = useState(false)
-
   const [tiles, setTiles] = useState(null);
   const [oldTiles, setOldTiles] = useState(null);
   const [selectedTile, setSelectedTile] = useState(null);
-
   const [rackTiles, setRackTiles] = useState([]);
   const [boardTiles, setBoardTiles] = useState([]);
+  const [isMyTurn, setIsMyTurn] = useState(true)
+
+  const handleMyTurn = useCallback((data) => {
+    setIsMyTurn(data.isMyTurn);
+    yourTurn();
+  }, [])
+
+  useEffect(() => {
+    socket.on('gameUpdate', handleMyTurn);
+    return(() => {
+      socket.off('gameUpdate');
+    });
+  }, [handleMyTurn, socket]);
+
+  //Handle socket room
+  useEffect(() => {
+    // Join room (gameID)
+    socket.emit('join', {room: cookies.gameid})
+
+    // Leave room when lobby unmount
+    return(() => {
+      socket.emit('leave', {room: cookies.gameid})
+    })
+  }, [cookies.gameid, socket])
 
   // Get the intital tiles from the database
   useEffect(() => {
-    const fetchTile = async () => {
-      setIsLoading(true)
-      const response = await fetch(
-        `${backendURL}/games/get`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({database: databaseName, Filter: {gameID: cookies.gameid}})
-        }
-      )
-      const game = await response.json().then(setIsLoading(false))
-      //console.log(game)
-      return game
-    }
-    fetchTile().then(game => {
-      setTiles(game.tiles);
-      setOldTiles(game.tiles);
-    })
+    setIsLoading(true)
+    API.get(`games/${cookies.gameid}`).then(res => {
+      const game = res.data;
+      setTiles(game.tiles)
+      setOldTiles(game.tiles)
+      setIsLoading(false)
+    });
   }, [cookies.gameid])
 
   // Separate rack and board tiles
@@ -104,17 +97,23 @@ const Game = () => {
     const clickTile = (event) => {
       // Avoid propagation to parent target
       event.stopPropagation();
-      console.log("clickTile: " + event.target.id);
-      const tileId = event.target.id;
 
+      // Block move if not your turn
+      if (!isMyTurn) {
+        notYourTurn();
+        return;
+      };
+
+      const tileId = event.target.id;
       const tile = tiles.find(tile => tile.id === tileId);
-      
-      if (tile.isLocked === true) {
-        console.log('tile locked');
+
+      // Reject if tile is locked
+      if (tile.isLocked) {
         lockedTile();
         return;
       };
 
+      // TODO Too much computing, arr.filter ???
       const newTiles = tiles.map(tile => {
         if (tile.id === tileId) {
           if (!tile.isSelected) {
@@ -132,18 +131,20 @@ const Game = () => {
 
     };
     
+    // Add event listeners to tiles
     const DOMtiles = document.querySelectorAll('.tile');
     DOMtiles.forEach(DOMtile => {
       DOMtile.addEventListener('click', clickTile);
     });
-    // Avoid event listeners duplication
+
+    // Remove event listeners to avoid duplication
     return(() => {
       DOMtiles.forEach(DOMtile => {
         DOMtile.removeEventListener('click', clickTile);
       });
     });
 
-  },[tiles, selectedTile, rackTiles, boardTiles]);
+  },[tiles, selectedTile, rackTiles, boardTiles, isMyTurn]);
 
 
   // Cells changes handling
@@ -152,6 +153,13 @@ const Game = () => {
     const clickCell = (event) => {
       // Avoid propagation to parent target
       event.stopPropagation();
+
+      // Block move if not your turn
+      if (!isMyTurn) {
+        notYourTurn();
+        return;
+      };
+
       const place = event.target.dataset.place;
       const cellX = parseInt(event.target.getAttribute('x'));
       const cellY = parseInt(event.target.getAttribute('y'));
@@ -159,6 +167,7 @@ const Game = () => {
       const cellTileId = event.target.dataset.tileid;
 
       const location = place === 'rack' ? {place:'rack', coords: pos} : {place: 'board', coords: [cellX, cellY]};
+
 
       if (selectedTile === null) {
         console.log('no tile selected');
@@ -199,54 +208,70 @@ const Game = () => {
       return newTiles;
     };
 
+    // Add event listeners to cells
     const DOMcells = document.querySelectorAll('.cell');
     DOMcells.forEach(DOMcell => {
       DOMcell.addEventListener('click', clickCell);
     });
     
-    // Avoid event listeners duplication
+    // Remove event listeners to avoid duplication
     return(() => {
       DOMcells.forEach(DOMcell => {
         DOMcell.removeEventListener('click', clickCell);
       });
     });
     
-  },[selectedTile, tiles]);
+  },[isMyTurn, selectedTile, tiles]);
 
   const onReset = () => {
+    // Block reset if not your turn
+    if (!isMyTurn) {
+      notYourTurn();
+      return;
+    };
+
+    // Block reset if nothing changes
+    if(tiles === oldTiles) {
+      noChanges();
+      return;
+    }
+
     setTiles(oldTiles);
   };
 
   
   const onSubmit = async () => {
+    // Block move if not your turn
+    if (!isMyTurn) {
+      notYourTurn();
+      return;
+    };
+
+    // Block submit if nothing changes
+    if(tiles === oldTiles) {
+      noChanges();
+      return;
+    }
   
+    // Unselect tile, and lock tiles on board
     const newTiles = tiles.map(tile => {
       if (tile.location.place === 'board' && tile.isLocked === false) {
-        return { ...tile, isLocked: true };
+        return { ...tile, isLocked: true, isSelected: false };
       }
-      return tile;
+      return {...tile, isSelected: false };
     })
-    // Updating the tiles in the database
-    setIsLoading(true)
-    await fetch(
-      `${backendURL}/games/update`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          database: databaseName,
-          Filter: { gameID: cookies.gameid },
-          DataToBeUpdated: { tiles: newTiles }
-        })
-      }
-    )
-    setIsLoading(false)
-    submitInfo()
+    setSelectedTile(null);
 
-    setTiles(newTiles);
-    setOldTiles(newTiles);
+    // Updating the tiles in the database
+    submitMove()
+    setIsLoading(true)
+    API.put(`games/${cookies.gameid}`, { DataToBeUpdated: { tiles: newTiles } }).then(res => {
+      setIsLoading(false)
+      validMove()
+      setIsMyTurn(false);
+      setTiles(newTiles);
+      setOldTiles(newTiles);
+    })
   };
 
   return (

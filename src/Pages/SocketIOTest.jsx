@@ -16,10 +16,12 @@ const SocketIOTest = () => {
   const [startPingTime, setStartPingTime] = useState((new Date()).getTime())
 
   const handleConnect = useCallback(() => {
+    console.log('handleConnect')
     socket.emit('my_event', {data: "I'm connected!, " + socket.id});
   }, [socket]);
 
   const handlePong = useCallback(() => {
+    console.log('handlePong')
     const latency = (new Date()).getTime() - startPingTime;
     //setSocketPingArr(oldArr => [...oldArr, latency])
     //setSocketPingArr(oldArr => oldArr.slice(-5))
@@ -31,11 +33,13 @@ const SocketIOTest = () => {
   }, [startPingTime]);
 
   const handleResponses = useCallback((msg, cb) => {
+    console.log('handleResponses')
     setResponses(oldArray => [...oldArray, `Received #${msg.count}, ${msg.time}: ${msg.data}`]);
     if (cb) {cb()};
   }, []);
 
   const handleMyRooms = useCallback((data) => {
+    console.log('handleMyRooms')
     setConnectedRooms(data.data);
   }, []);
 
@@ -49,19 +53,26 @@ const SocketIOTest = () => {
   }, [socket, startPingTime])
 
   useEffect(() => {
-
-    socket.on('connect', handleConnect);
     socket.on('my_pong', handlePong);
+
+    return(() => {
+      socket.off('my_pong')
+    })
+  }, [handlePong, socket])
+
+  useEffect(() => {
+    console.log('init')
+    socket.on('connect', handleConnect);
     socket.on('my_response', handleResponses);
     socket.on('my_rooms', handleMyRooms);
-    socket.emit('what_are_my_rooms');
+    //socket.emit('what_are_my_rooms');
 
     return (() => {
-      socket.off('my_response');
       socket.off('connect');
+      socket.off('my_response');
       socket.off('my_rooms');
     })
-  }, [handleConnect, handleResponses, handleMyRooms, socket, handlePong])
+  }, [socket, handleConnect, handleResponses, handleMyRooms])
 
 
   const onSubmit = (values) => {

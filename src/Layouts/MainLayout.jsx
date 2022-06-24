@@ -6,7 +6,7 @@ import { NoBackEndModal } from '../Components';
 
 import {
   HomeOutlined,
-  CommentOutlined,
+  CommentOutlined
 } from '@ant-design/icons';
 
 const { Header, Footer, Sider, Content } = Layout;
@@ -27,7 +27,7 @@ const MainLayout = ({ children }) => {
           <Title level={2} type='warning'>Scrabbln't</Title>
         </Header>
         <Layout className="site-layout">
-          <Content style={{ margin: '0em' }}>
+          <Content style={{ margin: '2em' }}>
             {children}
           </Content>
           <Sider>
@@ -42,11 +42,11 @@ const MainLayout = ({ children }) => {
 
 const SiderMenu = () => {
   const [menuItems, setMenuItems] = useState([])
-  const [cookies] = useCookies(['gameid', 'dev']);
+  const [cookies] = useCookies(['gameid', 'dev', 'player']);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (cookies.gameid) {
+    if (cookies.gameid && cookies.player) {
       setMenuItems([
         { label: 'Acceuil', key: '', icon: <HomeOutlined />},
         { label: 'Partie en cours', key: 'game', icon: <HomeOutlined />}
@@ -62,7 +62,6 @@ const SiderMenu = () => {
   }, [cookies])
 
   const onClick = (e) => {
-    //console.log('click', e);
     navigate(`/${e.key}`)
   }
 
