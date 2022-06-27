@@ -1,9 +1,6 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { SocketContext } from '../Contexts/socketIOContext';
 import { Button, Input, Form, Typography, Space } from 'antd';
-import { useEffect } from 'react';
-import { useCallback } from 'react';
-
 const { Title, Text } = Typography;
 
 const SocketIOTest = () => {

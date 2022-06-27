@@ -1,0 +1,38 @@
+import React from 'react'
+import { Button, Card, Spin } from 'antd'
+import { useNavigate } from "react-router-dom";
+import { useCookies } from 'react-cookie';
+const GameInfoViewCard = ({ gameInfo, isLoading }) => {
+  let navigate = useNavigate();
+  const [, setCookie] = useCookies(['gameid', 'player']);
+
+  const joinGameLobby = () => {
+    setCookie('gameid', gameInfo.id, { path: '/' });
+    navigate('/lobby')
+  }
+
+
+  return (
+    <>
+      <Card title={gameInfo.name} loading={isLoading}>
+        {
+          isLoading
+          ?
+          <Spin />
+          :
+          <div>
+            <p>
+              {"Nom: "}{gameInfo.name}
+            </p>
+            <p>
+              {"Joueurs: "}{gameInfo.nbPlayers}
+            </p>
+            <Button onClick={joinGameLobby}>Rejoindre Lobby</Button>
+          </div>
+        }
+      </Card>
+    </>
+  )
+}
+
+export default GameInfoViewCard

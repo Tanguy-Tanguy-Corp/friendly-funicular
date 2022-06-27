@@ -12,20 +12,22 @@ display: flex;
 justify-content: space-around;
 `
 
-const GameInfo = () => {
+const GameInfoView = ({ gameInfos, isLoading }) => {
   return (
     <GameInfoDiv>
       <div>
-        Player 1 VS Player 2
+        {gameInfos &&  gameInfos.name}
       </div>
       <div>
-        Score: 100
+        {gameInfos &&  gameInfos.players.map((player, index) => {
+          return `${player.pseudo}: ${player.score} ${index !== gameInfos.players.length - 1 ? 'VS ' : ''}`
+        })}
       </div>
       <div>
-        Temps restant 10:00
+        {gameInfos && 'Tour #' + gameInfos.turn}
       </div>
     </GameInfoDiv>
   )
 }
 
-export default GameInfo
+export default GameInfoView

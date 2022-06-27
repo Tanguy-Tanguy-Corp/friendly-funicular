@@ -1,10 +1,9 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { Button, Form, Input, Radio, Typography } from 'antd';
-import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from "react-router-dom";
 import { useCookies } from 'react-cookie';
 import API from '../services/API';
-import './Create.css';
+import '../css/Create.css';
 
 const { Title, Link } = Typography;
 
@@ -22,12 +21,11 @@ const Create = () => {
   }, [cookies, navigate])
 
   const createGame = useCallback(async (values) => {
-    const gameID =  uuidv4()
     setGameLoading(true)
-    API.post('games', { Document:{ gameID, creatorID: cookies.player, gamename: values.name, nbPlayers: values.nbPlayers }}).then(() => {
+    API.post('game', { creatorID: cookies.player, name: values.name, nbPlayers: parseInt(values.nbPlayers) }).then(res => {
       console.log('gameCreate')
       setGameLoading(false)
-      setCookie('gameid', gameID, { path: '/' });
+      setCookie('gameid', res.data.id, { path: '/' });
       navigate('/lobby')
     })
   }, [cookies.player, navigate, setCookie])

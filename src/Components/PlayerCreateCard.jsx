@@ -18,17 +18,17 @@ const PlayerCreateCard = () => {
   const createDeletePlayer = useCallback(async(values) => {
     setPlayerLoading(true)
     if (cookies.player) {
-      API.delete(`players/${cookies.player}`).then(() => {
+      API.delete(`player/${cookies.player}`).then(() => {
         console.log('deletePlayer');
         removeCookie('player', { path: '/' });
         setPlayer(null);
         setPlayerLoading(false);
       });
     } else {
-      API.post(`players`, { Document:{ pseudo: values.pseudo }}).then(res => {
+      API.post(`player`, { pseudo: values.pseudo }).then(res => {
         console.log('createPlayer');
         setPlayer(res.data);
-        setCookie('player', res.data.ID, { path: '/' });
+        setCookie('player', res.data.id, { path: '/' });
         setPlayerLoading(false);
       });
     };
@@ -38,7 +38,7 @@ const PlayerCreateCard = () => {
   useEffect(() => {
     if (cookies.player) {
       setPlayerLoading(true)
-      API.get(`players/${cookies.player}`).then(res => {
+      API.get(`player/${cookies.player}`).then(res => {
         console.log('get player')
         setPlayer(res.data)
         setPlayerLoading(false)
@@ -64,7 +64,7 @@ const PlayerCreateCard = () => {
                 {'Pseudo: '}{playerLoading ? <Spin /> : player?.pseudo}
               </div>
               <div>
-                {'ID: '}{playerLoading ? <Spin /> : player?.ID}
+                {'ID: '}{playerLoading ? <Spin /> : player?.id}
               </div>
             </>
           }

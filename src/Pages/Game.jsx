@@ -1,24 +1,31 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import { SocketContext } from "../Contexts/socketIOContext";
-import { Grid, Rack } from "../Components";
-import GameInfo from "../Components/GameInfo";
+import { Grid, Rack, GameInfoView } from "../Components";
 import { useCookies } from 'react-cookie';
-import { submitMove, validMove, illegalMove, yourTurn, notYourTurn, lockedTile, noChanges } from '../Helpers/gameMessages'
-import { useCallback } from "react";
+import { submitMoveMsg, validMoveMsg, illegalMoveMsg, yourTurnMsg, notYourTurnMsg, lockedTileMsg, noChangesMsg, unexpectedErrorMsg } from '../Helpers/gameMessages'
 import { useNavigate } from "react-router-dom";
+import { Button } from "antd";
 import API from "../services/API";
-
-
 
 const GRIDSIZE = 8;
 const RACKSIZE = 7;
 
 const Game = () => {
-
   const socket = useContext(SocketContext);
   let navigate = useNavigate();
-  
   const [cookies] = useCookies(['gameid', 'player']);
+  const [tiles, setTiles] = useState(null);
+  const [tilesLoading, setTilesLoading] = useState(false)
+  const [infos, setInfos] = useState(null);
+  const [infosLoading, setInfosLoading] = useState(false)
+  const [oldTiles, setOldTiles] = useState(null);
+  const [selectedTile, setSelectedTile] = useState(null);
+  const [playerTiles, setPlayerTiles] = useState([]);
+  const [boardTiles, setBoardTiles] = useState([]);
+  const [isMyTurn, setIsMyTurn] = useState(true);
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
+
+  const trigger = () => {setRefetchTrigger(oldCount => oldCount + 1)}
 
   // Redirect to home, if necessary cookies are missing
   useEffect(() => {
@@ -27,51 +34,66 @@ const Game = () => {
     }
   }, [cookies, navigate])
 
-  const [isLoading, setIsLoading] = useState(false)
-  const [tiles, setTiles] = useState(null);
-  const [oldTiles, setOldTiles] = useState(null);
-  const [selectedTile, setSelectedTile] = useState(null);
-  const [rackTiles, setRackTiles] = useState([]);
-  const [boardTiles, setBoardTiles] = useState([]);
-  const [isMyTurn, setIsMyTurn] = useState(true)
+  const handleGameUpdate = useCallback((data) => {
+    if (data.turnID === cookies.player) {
+      setIsMyTurn(true);
+      yourTurnMsg();
+    };
+  }, [cookies.player])
 
-  const handleMyTurn = useCallback((data) => {
-    setIsMyTurn(data.isMyTurn);
-    yourTurn();
-  }, [])
+  // Log my_response events
+  const handleResponses = useCallback((msg, cb) => {
+    console.log(`Received #${msg.count}, ${msg.time}: ${msg.data}`)
+    if (cb) {cb()};
+  }, []);
 
+  // Subscribe to socket events, and join game room
   useEffect(() => {
-    socket.on('gameUpdate', handleMyTurn);
+    socket.emit('join', {room: `game-${cookies.gameid}`})
+    socket.on('gameUpdate', handleGameUpdate);
+    socket.on('my_response', handleResponses);
     return(() => {
-      socket.off('gameUpdate');
+      socket.emit('leave', {room: `game-${cookies.gameid}`})
+      socket.off('gameUpdate', handleGameUpdate);
+      socket.off('my_response', handleResponses);
     });
-  }, [handleMyTurn, socket]);
+  }, [cookies.gameid, handleGameUpdate, handleResponses, socket]);
 
-  //Handle socket room
+  // Infos Fetching
   useEffect(() => {
-    // Join room (gameID)
-    socket.emit('join', {room: cookies.gameid})
-
-    // Leave room when lobby unmount
-    return(() => {
-      socket.emit('leave', {room: cookies.gameid})
+    setInfosLoading(true);
+    API.get(`game/${cookies.gameid}`).then(res => {
+      console.log(res);
+      setInfos(res.data)
+    }).catch(err => {
+      unexpectedErrorMsg(err);
+    }).finally(() => {
+      setInfosLoading(false)
     })
-  }, [cookies.gameid, socket])
+  }, [cookies.gameid, refetchTrigger])
 
-  // Get the intital tiles from the database
+  // Tiles Fecthing
   useEffect(() => {
-    setIsLoading(true)
-    API.get(`games/${cookies.gameid}`).then(res => {
-      const game = res.data;
-      setTiles(game.tiles)
-      setOldTiles(game.tiles)
-      setIsLoading(false)
-    });
-  }, [cookies.gameid])
+    setTilesLoading(true)
+    API.get(`tile/${cookies.gameid}/${cookies.player}`).then(res => {
+      console.log(res)
+      const data = res.data;
+      const rack = data.rack.tiles
+      const board = data.board
+      const tiles = board.concat(rack)
+      setTiles(tiles)
+      setOldTiles(tiles)
+    }).catch(err => {
+      unexpectedErrorMsg(err)
+      console.log(err);
+    }).finally(() => {
+      setTilesLoading(false)
+    })
+  }, [cookies.gameid, cookies.player, refetchTrigger])
 
   // Separate rack and board tiles
   useEffect(() => {
-    setRackTiles(
+    setPlayerTiles(
       tiles?.filter(tile => {
         if (tile.location.place === 'rack') {
           return true;
@@ -100,7 +122,7 @@ const Game = () => {
 
       // Block move if not your turn
       if (!isMyTurn) {
-        notYourTurn();
+        notYourTurnMsg();
         return;
       };
 
@@ -109,7 +131,7 @@ const Game = () => {
 
       // Reject if tile is locked
       if (tile.isLocked) {
-        lockedTile();
+        lockedTileMsg();
         return;
       };
 
@@ -144,7 +166,7 @@ const Game = () => {
       });
     });
 
-  },[tiles, selectedTile, rackTiles, boardTiles, isMyTurn]);
+  },[tiles, selectedTile, playerTiles, boardTiles, isMyTurn]);
 
 
   // Cells changes handling
@@ -156,7 +178,7 @@ const Game = () => {
 
       // Block move if not your turn
       if (!isMyTurn) {
-        notYourTurn();
+        notYourTurnMsg();
         return;
       };
 
@@ -226,13 +248,13 @@ const Game = () => {
   const onReset = () => {
     // Block reset if not your turn
     if (!isMyTurn) {
-      notYourTurn();
+      notYourTurnMsg();
       return;
     };
 
     // Block reset if nothing changes
     if(tiles === oldTiles) {
-      noChanges();
+      noChangesMsg();
       return;
     }
 
@@ -243,45 +265,57 @@ const Game = () => {
   const onSubmit = async () => {
     // Block move if not your turn
     if (!isMyTurn) {
-      notYourTurn();
+      notYourTurnMsg();
       return;
     };
 
     // Block submit if nothing changes
     if(tiles === oldTiles) {
-      noChanges();
+      noChangesMsg();
       return;
     }
   
     // Unselect tile, and lock tiles on board
     const newTiles = tiles.map(tile => {
       if (tile.location.place === 'board' && tile.isLocked === false) {
-        return { ...tile, isLocked: true, isSelected: false };
+        return { ...tile, isLocked: true, isSelected: false, moved: false };
       }
-      return {...tile, isSelected: false };
+      return {...tile, isSelected: false, moved: false };
     })
     setSelectedTile(null);
 
     // Updating the tiles in the database
-    submitMove()
-    setIsLoading(true)
-    API.put(`games/${cookies.gameid}`, { DataToBeUpdated: { tiles: newTiles } }).then(res => {
-      setIsLoading(false)
-      validMove()
+    submitMoveMsg()
+    setTilesLoading(true)
+    API.put('play/submit/', { tiles: newTiles }).then(res => {
+      if (res.data.validity === false) {
+        illegalMoveMsg();
+        onReset();
+        return;
+      }
+      validMoveMsg()
       setIsMyTurn(false);
       setTiles(newTiles);
       setOldTiles(newTiles);
+      trigger()
+    }).catch(err => {
+      unexpectedErrorMsg(err)
+      console.log(err);
+    }).finally(() => {
+      setTilesLoading(false)
     })
   };
 
   return (
     <div className="Game">
       <div className="gamearea">
-        <GameInfo />
-        <Grid size={GRIDSIZE} tiles={boardTiles}/>
-        <Rack size={RACKSIZE} tiles={rackTiles} onReset={onReset} onSubmit={onSubmit} isLoading={isLoading}/>
+        <GameInfoView gameInfos={infos} isLoading={infosLoading} />
+        <Grid size={GRIDSIZE} tiles={boardTiles} />
+        <Rack size={RACKSIZE} tiles={playerTiles} onReset={onReset} onSubmit={onSubmit} isLoading={tilesLoading} />
       </div>
-      <div>{`ID: ${cookies.gameid}`}</div>
+      <div>{infos && `ID: ${infos?.id}`}</div>
+      <div>{infos && `creatorID: ${infos?.creatorID}`}</div>
+      <Button onClick={trigger}>Refresh</Button>
     </div>
   );
 }

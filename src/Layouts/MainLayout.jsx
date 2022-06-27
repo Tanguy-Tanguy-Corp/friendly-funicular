@@ -23,7 +23,7 @@ const MainLayout = ({ children }) => {
     <>
       <NoBackEndModal/>
       <Layout style={{ minHeight: '100vh' }}>
-        <Header className="site-layout-background" style={{ padding: 0, textAlign: 'center' }}>
+        <Header className="site-layout-background" style={{ padding: '1em', textAlign: 'center' }}>
           <Title level={2} type='warning'>Scrabbln't</Title>
         </Header>
         <Layout className="site-layout">

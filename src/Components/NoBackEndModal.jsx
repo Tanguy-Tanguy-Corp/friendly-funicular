@@ -1,21 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Modal } from 'antd';
-
-const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL
+import API from '../services/API';
 
 const NoBackEndModal = () => {
   const [isBackEndUp, setIsBackEndUp] = useState(true)
 
   useEffect(() => {
-    const fetchBackEnd = async () => {
-      try {
-      await fetch(`${backendURL}`)
-      } catch (error) {
-        console.log(error)
-        setIsBackEndUp(false)
-      }
-    }
-    fetchBackEnd()
+    API.get().then(
+      setIsBackEndUp(true)
+    ).catch(err => {
+      console.log(err);
+      setIsBackEndUp(false);
+    });
   }, [])
 
   return (

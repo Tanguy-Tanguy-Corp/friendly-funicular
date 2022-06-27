@@ -1,19 +1,18 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button, Input, Form, Typography, Spin, Space } from 'antd';
 import { useNavigate } from "react-router-dom";
 import { useCookies } from 'react-cookie';
 import API from '../services/API';
+import { GameInfoViewCard } from '../Components';
 
 const { Title, Text } = Typography;
 
-
-const Join = () => {
+const Select = () => {
   let navigate = useNavigate()
-  // eslint-disable-next-line no-unused-vars
   const [cookies, setCookie] = useCookies(['gameid', 'player']);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [infos, setInfos] = useState(null);
-  const [infosLoading, setInfosLoading] = useState(true)
+  const [gameInfos, setGameInfos] = useState(null);
+  const [gameInfosLoading, setGameInfosLoading] = useState(true)
 
   // Redirect to home, if necessary cookies are missing
   useEffect(() => {
@@ -23,23 +22,19 @@ const Join = () => {
     }
   }, [cookies, navigate])
 
-  const fetchGameInfos = useCallback(() => {
-    setInfosLoading(true)
-    API.get('games/info')
+  useEffect(() => {
+    setGameInfosLoading(true)
+    API.get('game')
       .then(res => {
-        setInfos(res.data)
-        setInfosLoading(false)
+        setGameInfos(res.data)
+        setGameInfosLoading(false)
       })
   }, [])
-
-  useEffect(() => {
-    fetchGameInfos()
-  }, [fetchGameInfos])
   
 
   const onFinish = (values) => {
     console.log('Success:', values.gameid);
-    const gameIDs = infos.map(gameInfo => gameInfo.gameID)
+    const gameIDs = gameInfos.map(gameInfo => gameInfo.gameID)
     if (!gameIDs.includes(values.gameid)) {
       setErrorMsg("Cette partie n'existe pas")
       return
@@ -52,32 +47,19 @@ const Join = () => {
     console.log('Failed:', errorInfo);
   };
 
-  const onClickGame = (e) => {
-    let gameID = ''
-    if (e.target.tagName === 'SPAN') {
-      gameID = e.target.parentElement.id
-      console.log(gameID)
-    } else {
-      gameID = e.target.id
-      console.log(gameID)
-    }
-    setCookie('gameid', gameID, { path: '/' });
-    navigate('/lobby')
-  }
-
   return (
     <div>
       <Title>Rejoindre une partie</Title>
       {
-      infosLoading
+      gameInfosLoading
       ?
       <Spin/>
       :
       <div>
         <Space>
         {
-          infos?.map((info, index) => {
-            return(<Button key={index} id={info?.gameID} onClick={onClickGame}>{info?.gameName}</Button>)
+          gameInfos?.map((gameInfo, index) => {
+            return(<GameInfoViewCard  key={index} gameInfo={gameInfo} isLoading={gameInfosLoading} />)
           })
         }
         </Space>
@@ -103,4 +85,4 @@ const Join = () => {
   )
 }
 
-export default Join
+export default Select

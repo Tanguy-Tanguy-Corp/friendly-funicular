@@ -1,30 +1,32 @@
-import React, { useEffect, useContext, useState } from "react";
+import React, { useEffect, useContext, useState, useCallback } from "react";
 import { SocketContext } from "../Contexts/socketIOContext";
 import { PlayerCard } from "../Components";
 import { useNavigate } from "react-router-dom";
-import { Button, Spin, Typography, message } from 'antd'
+import { Button, Spin, Typography } from 'antd'
 import { useCookies } from 'react-cookie';
 import styled from "styled-components";
-import { useCallback } from "react";
 import API from "../services/API";
+import { playerJoinMsg, playerLeaveMsg, noPlaceMsg } from '../Helpers/lobbyMessages'
 const { Title } = Typography;
 
-const CardDiv = styled.div`
+const CardsDiv = styled.div`
   display: flex;
   justify-content: space-evenly;
 `
 
-const noPlaceWarning = () => {
-  message.success('Coup validé')
-}
-
 const Lobby = () => {
   const socket = useContext(SocketContext)
   const [cookies] = useCookies(['gameid', 'player']);
-  const [info, setInfo] = useState(null)
-  const [infoLoading, setInfoLoading] = useState(true)
-  const [refetchCount, setRefetchCount] = useState(0)
+  const [gameInfo, setGameInfo] = useState(null)
+  const [gameInfoLoading, setGameInfoLoading] = useState(true)
+
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
+
+  const trigger = () => {setRefetchTrigger(oldCount => oldCount + 1)}
+  //const [isIn, setIsIn] = useState(false)
   let navigate = useNavigate();
+
+
   
   // Redirect to home, if necessary cookies are missing
   useEffect(() => {
@@ -34,72 +36,67 @@ const Lobby = () => {
     }
   }, [cookies, navigate])
 
-  const refetchInfo = () => {setRefetchCount(oldCount => oldCount + 1)}
-
-  // Fetch game info
+  // Fetch game info (refetch on infoUdate socket event)
   useEffect(() => {
-    API.get(`games/info/${cookies.gameid}`)
+    setGameInfoLoading(true)
+    API.get(`game/${cookies.gameid}`)
       .then(res => {
-        setInfo(res.data)
-        setInfoLoading(false)
+        console.log('lobby infoDoc')
+        console.log(res)
+        setGameInfo(res.data)
+        setGameInfoLoading(false)
       })
-  }, [cookies.gameid, refetchCount])
+  }, [cookies.gameid, refetchTrigger])
 
-  const playerJoin = useCallback(() => {
-    setInfoLoading(true);
-    if (info.remainingPlaces === 0) {
-      noPlaceWarning();
+  const join = useCallback(() => {
+    setGameInfoLoading(true);
+    if (gameInfo.remainingPlaces === 0) {
+      noPlaceMsg();
       return;
     };
-    API.put(`games/info/${cookies.gameid}`, {data: cookies.player})
-      .then(res => {
-        setInfo(res.data)
-        setInfoLoading(false)
-        socket.emit('playerJoin', {room: cookies.gameid})
-      });
-  },[cookies, info, socket]);
+    API.put(`player/join/`, { playerID: cookies.player, gameID: cookies.gameid })
+      .then(socket.emit('playerJoin', {room: cookies.gameid}));
+  },[cookies, gameInfo, socket]);
 
-  const playerLeave = useCallback(() => {
-    setInfoLoading(true);
-    if (info.remainingPlaces === 0) {
-      noPlaceWarning();
-      return;
-    };
-    API.put(`games/info/${cookies.gameid}`, {data: cookies.player})
-      .then(res => {
-        setInfo(res.data)
-        setInfoLoading(false)
-        socket.emit('playerLeave', {room: cookies.gameid})
-      });
-  },[cookies, info, socket]);
+  const leave = useCallback(() => {
+    setGameInfoLoading(true);
+    API.put(`player/leave/`, { playerID: cookies.player, gameID: cookies.gameid })
+      .then(socket.emit('playerLeave', {room: cookies.gameid}));
+  },[cookies, socket]);
 
 
   const onStart = () => {
+    // Emit a gameStart socket event to provoke the starting of the game
+    socket.emit('gameStart', {room: cookies.gameid})
     navigate('/game')
   }
 
-  //Handle socket room
-  useEffect(() => {
-    // Join room (gameID)
-    socket.emit('join', {room: cookies.gameid})
+  // Log my_response events
+  const handleResponses = useCallback((msg, cb) => {
+    console.log(`Received #${msg.count}, ${msg.time}: ${msg.data}`)
+    if (cb) {cb()};
+  }, []);
 
-    // Leave room when lobby unmount
-    return(() => {
-      socket.emit('leave', {room: cookies.gameid})
-    })
-  }, [cookies.gameid, socket])
-
-  const handleInfoUpdate = useCallback(() => {
-    refetchInfo()
+  // On infoUpdate event, show informational message, and provoke gameInfo refetch
+  const handleInfoUpdate = useCallback((message) => {
+    console.log('infoUpdate');
+    if (message.event === 'playerJoin') {playerJoinMsg()};
+    if (message.event === 'playerLeave') {playerLeaveMsg()};
+    // Increment the refetch counter to provoke a game info refetch
+    trigger()
   }, [])
 
-  // Subscribe to infoUpdate socket event
+  // Subscribe to infoUpdate socket event, and join socket game room
   useEffect(() => {
+    socket.emit('join', {room: `lobby-${cookies.gameid}`});
     socket.on('infoUpdate', handleInfoUpdate);
+    socket.on('my_response', handleResponses);
     return(() => {
-      socket.off('infoUpdate', handleInfoUpdate)
+      socket.emit('leave', {room: `lobby-${cookies.gameid}`});
+      socket.off('infoUpdate', handleInfoUpdate);
+      socket.off('my_response', handleResponses);
     })
-  }, [cookies.gameid, cookies.player, handleInfoUpdate, socket])
+  }, [cookies.gameid, cookies.player, handleInfoUpdate, handleResponses, socket])
 
   return (
     <div>
@@ -108,33 +105,34 @@ const Lobby = () => {
       </Title>
       <div>
         <Title level={5}>
-          {'Nom de la partie: '}{infoLoading ? <Spin /> : info?.gameName}
+          {'Nom de la partie: '}{gameInfoLoading ? <Spin /> : gameInfo?.name}
         </Title>
         <Title level={5}>
-          {'Nombre de Joueurs: '}{infoLoading ? <Spin /> : info?.nbPlayers}
+          {'Nombre de Joueurs: '}{gameInfoLoading ? <Spin /> : gameInfo?.nbPlayers}
         </Title>
       </div>
-      <CardDiv>
-          {!infoLoading && info?.players?.map((player, index) => {
-            return (<PlayerCard key={index} player={player} leave={playerLeave}/>)
+      <CardsDiv>
+          {!gameInfoLoading && gameInfo?.players?.map((player, index) => {
+            return (<PlayerCard isLoading={gameInfoLoading} key={index} player={player} leave={leave}/>)
           })}
-      </CardDiv>
+      </CardsDiv>
       <div>
-        <Button type="primary" shape="round" size='large' loading={infoLoading} onClick={playerJoin}>
+        <Button type="primary" shape="round" size='large' loading={gameInfoLoading} onClick={join}>
           Rejoinre la partie
         </Button>
-        <Button type="primary" shape="round" size='large' loading={infoLoading} onClick={onStart}>
+        <Button type="primary" shape="round" size='large' loading={gameInfoLoading} onClick={onStart}>
           Démarrer la partie
         </Button>
       </div>
       <div style={{ textAlign: 'right' }}>
         <div>
-          {'ID: '}{!infoLoading && info?.gameID}
+          {'ID: '}{!gameInfoLoading && gameInfo?.id}
         </div>
         <div>
-          {'creatorID: '}{!infoLoading && info?.creatorID}
+          {'creatorID: '}{!gameInfoLoading && gameInfo?.creatorID}
         </div>
       </div>
+      <Button onClick={trigger}>Refresh</Button>
     </div>
   )
 }

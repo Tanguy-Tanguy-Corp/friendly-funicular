@@ -20,12 +20,8 @@ const Home = () => {
     navigate('/create')
   }
   const onJoin = () => {
-    navigate('/join')
+    navigate('/select')
   }
-
-  React.useEffect(() => {
-    console.log('home')
-  }, [])
   
   return (
     <div>

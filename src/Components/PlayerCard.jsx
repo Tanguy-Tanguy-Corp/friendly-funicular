@@ -1,19 +1,20 @@
 import React from 'react'
 import { Card } from 'antd'
 
-const PlayerCard = ({ player }) => {
+const PlayerCard = ({ player, isLoading }) => {
   return (
     <>
-      <Card title='Player Card' style={{ width: 300 }}>
-        <p>
-          {player?.pseudo}
-        </p>
-        <p>
-          {player?.ID}
-        </p>
-        <p>
-          {player?.isReady}
-        </p>
+      <Card title={isLoading ? "En attente d'un joueur" : player?.name} loading={isLoading} style={{ width: 300 }}>
+        {
+          <>
+          <p>
+            {'Pseudo: '}{player?.pseudo}
+          </p>
+          <p>
+            {'ID: '}{player?.id}
+          </p>
+          </>
+        }
       </Card>
     </>
   )

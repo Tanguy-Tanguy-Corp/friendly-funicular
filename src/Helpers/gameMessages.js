@@ -1,31 +1,38 @@
 import { message } from "antd"
 
-const submitMove = () => {
+const submitMoveMsg = () => {
   message.loading({ content: 'Vérification du coup', key: 'validation' })
 }
 
-const validMove = () => {
+const validMoveMsg = () => {
   message.success({ content: 'Coup validé', key: 'validation' })
 }
 
-const illegalMove = () => {
+const illegalMoveMsg = () => {
   message.error({ content: 'Coup illégal', key: 'validation' })
 }
 
-const yourTurn = () => {
-  message.info('A vous de jouer!')
+const yourTurnMsg = () => {
+  message.info({ content: 'A vous de jouer!' })
 }
 
-const notYourTurn = () => {
-  message.error("Ce n'est pas votre tour!!!")
+const notYourTurnMsg = () => {
+  message.error({ content: "Ce n'est pas votre tour!!!" })
 }
 
-const lockedTile = () => {
-  message.warning("Tuile verrouillée!")
+const unexpectedErrorMsg = (err) => {
+  message.error({ content: `Une erreur s'est produite: ${err.message}, plus de détails dans la console` });
+  console.log(err);
 }
 
-const noChanges = () => {
-  message.warning("Rien à changer (et rien ne changera jamais!)")
+const lockedTileMsg = () => {
+  message.warning({ content: "Tuile verrouillée!" })
 }
 
-export { submitMove, validMove, illegalMove, yourTurn, notYourTurn, lockedTile, noChanges }
+const noChangesMsg = () => {
+  message.warning({ content: "Rien à changer (et rien ne changera jamais!)" })
+}
+
+
+
+export { submitMoveMsg, validMoveMsg, illegalMoveMsg, yourTurnMsg, notYourTurnMsg, lockedTileMsg, noChangesMsg, unexpectedErrorMsg }

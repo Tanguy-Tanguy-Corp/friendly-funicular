@@ -1,52 +1,41 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Home, Game, Create, Lobby, Join, SocketIOTest } from './Pages';
+import React, { useEffect, useState } from 'react';
+import { Home, Game, Create, Lobby, Select, SocketIOTest } from './Pages';
 import MainLayout from './Layouts/MainLayout';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import './App.css'
 import { SocketContext, socket } from './Contexts/socketIOContext'
 import { PlayerContext } from './Contexts/playerContext';
 import { useCookies } from 'react-cookie';
-
-const backendURL = process.env.NODE_ENV === 'development' ? process.env.REACT_APP_DEV_BACKEND_URL : process.env.REACT_APP_PROD_BACKEND_URL;
+import API from './services/API';
+import './css/App.css'
 
 function App() {
   const [cookies] = useCookies(['player'])
-  const [playerID, setPlayerID] = useState(null)
-  const [pseudo, setPseudo] = useState(null)
+  const [player, setPlayer] = useState(null)
   const [playerIsLoading, setPlayerIsLoading] = useState(false)
-
-  const fetchUser = useCallback(async(playerID) => {
-    setPlayerIsLoading(true)
-      const response = await fetch(`${backendURL}/players/${playerID}`)
-      const player = await response.json().then(setPlayerIsLoading(false))
-      console.log('fetchUser')
-      console.log(player)
-      return player
-  }, [])
 
   useEffect(() => {
     if (cookies.player) {
-      console.log('update user context')
-      fetchUser(cookies.player).then(player => {
-        setPlayerID(player.ID)
-        setPseudo(player.pseudo)
+      setPlayerIsLoading(true);
+      API.get(`player/${cookies.player}`).then(res => {
+        console.log('fetchPlayer');
+        setPlayer(res.data);
+        setPlayerIsLoading(false);
       })
     } else {
       console.log('remove user context')
-      setPlayerID(null)
-      setPseudo(null)
+      setPlayer(null)
     }
-  }, [cookies.player, fetchUser])
+  }, [cookies.player])
 
   return (
     <SocketContext.Provider value={ socket }>
-      <PlayerContext.Provider value={{ ID: playerID, pseudo: pseudo, isLoading: playerIsLoading }}>
+      <PlayerContext.Provider value={{ ID: player?.id, pseudo: player?.pseudo, isLoading: playerIsLoading }}>
       <BrowserRouter>
         <MainLayout>
           <Routes>
             <Route exact path='/' element={<Home />} />
             <Route exact path='lobby' element={<Lobby />} />
-            <Route exact path='join' element={<Join />} />
+            <Route exact path='select' element={<Select />} />
             <Route exact path='game' element={<Game />} />
             <Route exact path='create' element={<Create />} />
             <Route exact path='socket' element={<SocketIOTest />} />
