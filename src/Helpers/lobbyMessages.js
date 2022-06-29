@@ -12,4 +12,9 @@ const noPlaceMsg = () => {
   message.warning({ content: "Il n'y a plus de places disponibles" })
 }
 
-export { playerJoinMsg, playerLeaveMsg, noPlaceMsg }
+const errorMsg = (err) => {
+  message.error({ content: err.response.data.errMsg });
+  console.log(err);
+}
+
+export { playerJoinMsg, playerLeaveMsg, noPlaceMsg, errorMsg }

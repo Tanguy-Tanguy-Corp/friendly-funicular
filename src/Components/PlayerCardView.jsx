@@ -1,7 +1,7 @@
 import React from 'react'
-import { Card } from 'antd'
+import { Button, Card } from 'antd'
 
-const PlayerCard = ({ player, isLoading }) => {
+const PlayerCardView = ({ player, isLoading, leave }) => {
   return (
     <>
       <Card title={isLoading ? "En attente d'un joueur" : player?.name} loading={isLoading} style={{ width: 300 }}>
@@ -13,6 +13,7 @@ const PlayerCard = ({ player, isLoading }) => {
           <p>
             {'ID: '}{player?.id}
           </p>
+          <Button>Quitter</Button>
           </>
         }
       </Card>
@@ -20,4 +21,4 @@ const PlayerCard = ({ player, isLoading }) => {
   )
 }
 
-export default PlayerCard
+export default PlayerCardView

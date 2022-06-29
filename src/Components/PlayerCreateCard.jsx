@@ -18,19 +18,22 @@ const PlayerCreateCard = () => {
   const createDeletePlayer = useCallback(async(values) => {
     setPlayerLoading(true)
     if (cookies.player) {
-      API.delete(`player/${cookies.player}`).then(() => {
+      API.delete(`player/${cookies.player}`)
+      .then(() => {
         console.log('deletePlayer');
         removeCookie('player', { path: '/' });
         setPlayer(null);
-        setPlayerLoading(false);
-      });
+      })
+      .catch((err) => console.log(err))
+      .finally(() => setPlayerLoading(false))
     } else {
       API.post(`player`, { pseudo: values.pseudo }).then(res => {
         console.log('createPlayer');
         setPlayer(res.data);
         setCookie('player', res.data.id, { path: '/' });
-        setPlayerLoading(false);
-      });
+      })
+      .catch((err) => console.log(err))
+      .finally(() => setPlayerLoading(false))
     };
   }, [cookies.player, removeCookie, setCookie]);
 
@@ -41,8 +44,9 @@ const PlayerCreateCard = () => {
       API.get(`player/${cookies.player}`).then(res => {
         console.log('get player')
         setPlayer(res.data)
-        setPlayerLoading(false)
       })
+      .catch((err) => console.log(err))
+      .finally(() => setPlayerLoading(false))
     }
   // No need to re-render when player has been created => no dependency
   // eslint-disable-next-line react-hooks/exhaustive-deps

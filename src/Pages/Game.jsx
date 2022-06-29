@@ -49,6 +49,7 @@ const Game = () => {
 
   // Subscribe to socket events, and join game room
   useEffect(() => {
+    socket.emit('close_room', {room: `lobby-${cookies.gameid}`})
     socket.emit('join', {room: `game-${cookies.gameid}`})
     socket.on('gameUpdate', handleGameUpdate);
     socket.on('my_response', handleResponses);

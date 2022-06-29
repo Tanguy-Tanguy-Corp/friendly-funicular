@@ -1,5 +1,8 @@
 {
-  "name": "gameboard-scrabble",
+  "name": "friendly-funicular",
+  "author": {"name": "Michael Tanguy"},
+  "description": "front-end part of a scrabble-like game web app prpoject",
+  "keywords": ["web app", "game"],
   "version": "0.1.0",
   "private": true,
   "dependencies": {
