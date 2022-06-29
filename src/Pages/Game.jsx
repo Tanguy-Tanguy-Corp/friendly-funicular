@@ -260,7 +260,7 @@ const Game = () => {
   
     setTilesLoading(true)
     submitMoveMsg()
-    API.put('play/subit', {
+    API.put('play/submit', {
       playerID: cookies.player,
       gameID: cookies.gameid,
       board: boardTiles,
