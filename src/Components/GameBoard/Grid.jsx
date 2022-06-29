@@ -17,18 +17,17 @@ justify-content: center;
 
 
 const Grid = ({ tiles, size }) => {
-
-  const gridCells = new Array(size**2);
+  const cells = []
   for (var x=0; x < size; x++) {
     for (var y=0; y < size; y++) {
-      gridCells[x * size + y] = { x: x, y: y };
+      cells.push({ x: x, y: y });
     };
   };
 
   return (
     <BoardWrapper className='grid' size={size}>
       {
-        gridCells.map((cell,i) => {
+        cells.map((cell,i) => {
           const tile = tiles?.find(tile => 
             tile.location.coords[0] === cell.x && tile.location.coords[1] === cell.y
           )

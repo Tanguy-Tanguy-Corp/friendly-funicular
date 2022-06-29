@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useCallback } from "react";
 import { SocketContext } from "../Contexts/socketIOContext";
 import { Grid, Rack, GameInfoView } from "../Components";
 import { useCookies } from 'react-cookie';
-import { submitMoveMsg, validMoveMsg, illegalMoveMsg, yourTurnMsg, notYourTurnMsg, lockedTileMsg, noChangesMsg, unexpectedErrorMsg } from '../Helpers/gameMessages'
+import { submitMoveMsg, validMoveMsg, illegalMoveMsg, myTurnMsg, notYourTurnMsg, lockedTileMsg, noChangesMsg, unexpectedErrorMsg } from '../Helpers/gameMessages'
 import { useNavigate } from "react-router-dom";
 import { Button } from "antd";
 import API from "../services/API";
@@ -21,7 +21,7 @@ const Game = () => {
   const [selectedTile, setSelectedTile] = useState(null);
   const [playerTiles, setPlayerTiles] = useState([]);
   const [boardTiles, setBoardTiles] = useState([]);
-  const [isMyTurn, setIsMyTurn] = useState(true);
+  const [isMyTurn, setIsMyTurn] = useState(false);
   const [refetchTrigger, setRefetchTrigger] = useState(0);
 
   const trigger = () => {setRefetchTrigger(oldCount => oldCount + 1)};
@@ -54,8 +54,14 @@ const Game = () => {
     setInfosLoading(true);
     API.get(`game/${cookies.gameid}`)
     .then(res => {
-      setInfos(res.data)
-      setIsMyTurn(res.data.turnPlayerId === cookies.player)
+      const infos = res.data
+      setInfos(infos)
+      if (infos.turnPlayerId === cookies.player) {
+        setIsMyTurn(true)
+        myTurnMsg()
+      } else {
+        setIsMyTurn(false)
+      }
     }).catch(err => {
       unexpectedErrorMsg(err);
     }).finally(() => {
@@ -253,7 +259,8 @@ const Game = () => {
     }
   
     setTilesLoading(true)
-    API.put('play/submit', {
+    submitMoveMsg()
+    API.put('play/subit', {
       playerID: cookies.player,
       gameID: cookies.gameid,
       board: boardTiles,
@@ -262,9 +269,11 @@ const Game = () => {
     .then(res => {
       console.log(res)
       socket.emit('moveSubmitEvent', {room: `game-${cookies.gameid}`, playerID: cookies.player})
+      validMoveMsg()
     })
     .catch(err => {
       console.log(err)
+      illegalMoveMsg(err.response.data?.errMsg)
     })
     .finally(() => {
       setTilesLoading(false)
@@ -276,8 +285,8 @@ const Game = () => {
     <div className="Game">
       <div className="gamearea">
         <GameInfoView gameInfos={infos} isLoading={infosLoading} />
-        <Grid size={7} tiles={boardTiles} />
-        <Rack size={7} tiles={playerTiles} onReset={onReset} onSubmit={onSubmit} isLoading={tilesLoading} />
+        <Grid size={infos?.gridSize} tiles={boardTiles} />
+        <Rack size={infos?.tilesPerRack} tiles={playerTiles} onReset={onReset} onSubmit={onSubmit} isLoading={tilesLoading} />
       </div>
       <div style={{ textAlign: 'right' }}>
         <div>

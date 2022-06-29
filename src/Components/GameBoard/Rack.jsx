@@ -15,16 +15,16 @@ justify-content: center;
 `
 
 const Rack = ({ tiles, size, onReset, onSubmit, isLoading }) => {
-  const rackCells = new Array(size**2);
+  const cells = [];
   for (var i=0; i < size; i++) {
-    rackCells[i] = { pos: i };
+    cells.push({ pos: i });
   };
 
   return (
     <RackWrapper isLoading={isLoading} className='rack'>
       <Space>
       {
-        rackCells.map((cell,i) => {
+        cells.map((cell,i) => {
           const tile = tiles?.find(tile => 
             tile.location.coords === cell.pos
           )

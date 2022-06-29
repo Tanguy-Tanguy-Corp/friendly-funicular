@@ -8,11 +8,11 @@ const validMoveMsg = () => {
   message.success({ content: 'Coup validé', key: 'validation' })
 }
 
-const illegalMoveMsg = () => {
-  message.error({ content: 'Coup illégal', key: 'validation' })
+const illegalMoveMsg = (errMsg) => {
+  message.error({ content: `Coup illégal: ${errMsg}`, key: 'validation' })
 }
 
-const yourTurnMsg = () => {
+const myTurnMsg = () => {
   message.info({ content: 'A vous de jouer!' })
 }
 
@@ -35,4 +35,4 @@ const noChangesMsg = () => {
 
 
 
-export { submitMoveMsg, validMoveMsg, illegalMoveMsg, yourTurnMsg, notYourTurnMsg, lockedTileMsg, noChangesMsg, unexpectedErrorMsg }
+export { submitMoveMsg, validMoveMsg, illegalMoveMsg, myTurnMsg, notYourTurnMsg, lockedTileMsg, noChangesMsg, unexpectedErrorMsg }
