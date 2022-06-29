@@ -17,8 +17,8 @@ const CardsDiv = styled.div`
 const Lobby = () => {
   const socket = useContext(SocketContext)
   const [cookies] = useCookies(['gameid', 'player']);
-  const [gameInfo, setGameInfo] = useState(null)
-  const [gameInfoLoading, setGameInfoLoading] = useState(false)
+  const [infos, setInfos] = useState(null)
+  const [infosLoading, setInfosLoading] = useState(false)
   const [joinLoading, setJoinLoading] = useState(false)
   const [leaveLoading, setLeaveLoading] = useState(false)
   const [startLoading, setStartLoading] = useState(false)
@@ -41,12 +41,12 @@ const Lobby = () => {
 
   // Fetch game info (refetch on infoUdate socket event)
   useEffect(() => {
-    setGameInfoLoading(true)
+    setInfosLoading(true)
     API.get(`game/${cookies.gameid}`)
       .then(res => {
         console.log('lobby infoDoc')
         console.log(res)
-        setGameInfo(res.data)
+        setInfos(res.data)
         const playerIDs = res.data.players.map(player => player.id)
         setIsIn(playerIDs.includes(cookies.player))
         console.log(playerIDs)
@@ -54,7 +54,7 @@ const Lobby = () => {
       .catch((err) => {
         errorMsg(err);
       })
-      .finally(() => setGameInfoLoading(false))
+      .finally(() => setInfosLoading(false))
   }, [cookies.gameid, cookies.player, refetchTrigger])
 
   const joinGame = async () => {
@@ -63,21 +63,18 @@ const Lobby = () => {
       .then(() => {
         socket.emit('playerJoinEvent', {room: `lobby-${cookies.gameid}`, playerID: cookies.player})
       })
-      .catch((err) => {
-        errorMsg(err);
-      })
+      .catch((err) => errorMsg(err))
       .finally(() => setJoinLoading(false))
   }
 
-  const leaveGame =() => {
+
+  const leaveGame = () => {
     setLeaveLoading(true);
     API.put(`player/leave`, { playerID: cookies.player, gameID: cookies.gameid })
       .then(() => {
         socket.emit('playerLeaveEvent', {room: `lobby-${cookies.gameid}`, playerID: cookies.player})
       })
-      .catch((err) => {
-        errorMsg(err);
-      })
+      .catch((err) => errorMsg(err))
       .finally(() => setLeaveLoading(false))
   }
 
@@ -114,7 +111,7 @@ const Lobby = () => {
     })
   }, [cookies.gameid, cookies.player, handleInfoUpdate, socket])
 
-  // TODO: implement kick function
+  // TODO: implement kick function for game creator
   const kick = () => {
     console.log('kick feature not implemented')
   }
@@ -126,14 +123,14 @@ const Lobby = () => {
       </Title>
       <div>
         <Title level={5}>
-          {'Nom de la partie: '}{gameInfoLoading ? <Spin /> : gameInfo?.name}
+          {'Nom de la partie: '}{infosLoading ? <Spin /> : infos?.name}
         </Title>
         <Title level={5}>
-          {'Nombre de Joueurs: '}{gameInfoLoading ? <Spin /> : gameInfo?.nbPlayers}
+          {'Nombre de places: '}{infosLoading ? <Spin /> : infos?.players.length+"/"+infos?.nbPlayers}
         </Title>
       </div>
       <CardsDiv>
-          {!gameInfoLoading && gameInfo?.players?.map((player, index) => {
+          {!infosLoading && infos?.players?.map((player, index) => {
             return (<PlayerCardView isLoading={leaveLoading} key={index} player={player} kick={kick}/>)
           })}
       </CardsDiv>
@@ -149,16 +146,16 @@ const Lobby = () => {
             Quitter la partie
           </Button>
         }
-        <Button type="primary" shape="round" size='large' disabled={gameInfo?.creatorID !== cookies.player} loading={startLoading} onClick={startGame}>
+        <Button type="primary" shape="round" size='large' disabled={infos?.creatorID !== cookies.player} loading={startLoading} onClick={startGame}>
           Démarrer la partie
         </Button>
       </div>
       <div style={{ textAlign: 'right' }}>
         <div>
-          {'ID: '}{!gameInfoLoading && gameInfo?.id}
+          {'ID: '}{!infosLoading && infos?.id}
         </div>
         <div>
-          {'creatorID: '}{!gameInfoLoading && gameInfo?.creatorID}
+          {'creatorID: '}{!infosLoading && infos?.creatorID}
         </div>
       </div>
       <Button onClick={trigger}>Refresh</Button>

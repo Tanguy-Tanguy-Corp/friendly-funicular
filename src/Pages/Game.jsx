@@ -7,17 +7,16 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "antd";
 import API from "../services/API";
 
-const GRIDSIZE = 8;
-const RACKSIZE = 7;
-
 const Game = () => {
   const socket = useContext(SocketContext);
   let navigate = useNavigate();
   const [cookies] = useCookies(['gameid', 'player']);
+
   const [tiles, setTiles] = useState(null);
-  const [tilesLoading, setTilesLoading] = useState(false)
+  const [tilesLoading, setTilesLoading] = useState(false);
   const [infos, setInfos] = useState(null);
-  const [infosLoading, setInfosLoading] = useState(false)
+  const [infosLoading, setInfosLoading] = useState(false);
+
   const [oldTiles, setOldTiles] = useState(null);
   const [selectedTile, setSelectedTile] = useState(null);
   const [playerTiles, setPlayerTiles] = useState([]);
@@ -25,59 +24,49 @@ const Game = () => {
   const [isMyTurn, setIsMyTurn] = useState(true);
   const [refetchTrigger, setRefetchTrigger] = useState(0);
 
-  const trigger = () => {setRefetchTrigger(oldCount => oldCount + 1)}
+  const trigger = () => {setRefetchTrigger(oldCount => oldCount + 1)};
 
   // Redirect to home, if necessary cookies are missing
   useEffect(() => {
     if (!cookies.player || !cookies.gameid) {
-      navigate('/')
-    }
-  }, [cookies, navigate])
-
-  const handleGameUpdate = useCallback((data) => {
-    if (data.turnID === cookies.player) {
-      setIsMyTurn(true);
-      yourTurnMsg();
+      navigate('/');
     };
-  }, [cookies.player])
+  }, [cookies, navigate]);
 
-  // Log my_response events
-  const handleResponses = useCallback((msg, cb) => {
-    console.log(`Received #${msg.count}, ${msg.time}: ${msg.data}`)
-    if (cb) {cb()};
+  const handleGameUpdate = useCallback((message) => {
+    console.log(message.playerID)
+    trigger();
   }, []);
 
   // Subscribe to socket events, and join game room
   useEffect(() => {
-    socket.emit('close_room', {room: `lobby-${cookies.gameid}`})
-    socket.emit('join', {room: `game-${cookies.gameid}`})
+    socket.emit('close_room', {room: `lobby-${cookies.gameid}`});
+    socket.emit('join', {room: `game-${cookies.gameid}`});
     socket.on('gameUpdate', handleGameUpdate);
-    socket.on('my_response', handleResponses);
     return(() => {
-      socket.emit('leave', {room: `game-${cookies.gameid}`})
+      socket.emit('leave', {room: `game-${cookies.gameid}`});
       socket.off('gameUpdate', handleGameUpdate);
-      socket.off('my_response', handleResponses);
     });
-  }, [cookies.gameid, handleGameUpdate, handleResponses, socket]);
+  }, [cookies.gameid, handleGameUpdate, socket]);
 
   // Infos Fetching
   useEffect(() => {
     setInfosLoading(true);
-    API.get(`game/${cookies.gameid}`).then(res => {
-      console.log(res);
+    API.get(`game/${cookies.gameid}`)
+    .then(res => {
       setInfos(res.data)
+      setIsMyTurn(res.data.turnPlayerId === cookies.player)
     }).catch(err => {
       unexpectedErrorMsg(err);
     }).finally(() => {
       setInfosLoading(false)
     })
-  }, [cookies.gameid, refetchTrigger])
+  }, [cookies.gameid, cookies.player, refetchTrigger]);
 
   // Tiles Fecthing
   useEffect(() => {
     setTilesLoading(true)
     API.get(`tile/${cookies.gameid}/${cookies.player}`).then(res => {
-      console.log(res)
       const data = res.data;
       const rack = data.rack.tiles
       const board = data.board
@@ -86,35 +75,22 @@ const Game = () => {
       setOldTiles(tiles)
     }).catch(err => {
       unexpectedErrorMsg(err)
-      console.log(err);
     }).finally(() => {
       setTilesLoading(false)
     })
-  }, [cookies.gameid, cookies.player, refetchTrigger])
+  }, [cookies.gameid, cookies.player, refetchTrigger]);
 
   // Separate rack and board tiles
   useEffect(() => {
     setPlayerTiles(
-      tiles?.filter(tile => {
-        if (tile.location.place === 'rack') {
-          return true;
-        } else {
-          return false;
-        };
-      })
+      tiles?.filter(tile => (tile.location.place === 'rack'))
     );
     setBoardTiles(
-      tiles?.filter(tile => {
-        if (tile.location.place === 'board') {
-          return true;
-        } else {
-          return false;
-        };
-      })
+      tiles?.filter(tile => (tile.location.place === 'board'))
     );
   }, [tiles]);
 
-  // Tiles changes handling
+  // Tiles DOM handling
   useEffect(() => {
 
     const clickTile = (event) => {
@@ -170,7 +146,7 @@ const Game = () => {
   },[tiles, selectedTile, playerTiles, boardTiles, isMyTurn]);
 
 
-  // Cells changes handling
+  // Cells DOM handling
   useEffect(() => {
 
     const clickCell = (event) => {
@@ -263,7 +239,7 @@ const Game = () => {
   };
 
   
-  const onSubmit = async () => {
+  const onSubmit = () => {
     // Block move if not your turn
     if (!isMyTurn) {
       notYourTurnMsg();
@@ -276,49 +252,44 @@ const Game = () => {
       return;
     }
   
-    // Unselect tile, and lock tiles on board
-    const newTiles = tiles.map(tile => {
-      if (tile.location.place === 'board' && tile.isLocked === false) {
-        return { ...tile, isLocked: true, isSelected: false, moved: false };
-      }
-      return {...tile, isSelected: false, moved: false };
-    })
-    setSelectedTile(null);
-
-    // Updating the tiles in the database
-    submitMoveMsg()
     setTilesLoading(true)
-    API.put('play/submit/', { tiles: newTiles }).then(res => {
-      if (res.data.validity === false) {
-        illegalMoveMsg();
-        onReset();
-        return;
-      }
-      validMoveMsg()
-      setIsMyTurn(false);
-      setTiles(newTiles);
-      setOldTiles(newTiles);
-      trigger()
-    }).catch(err => {
-      unexpectedErrorMsg(err)
-      console.log(err);
-    }).finally(() => {
+    API.put('play/submit', {
+      playerID: cookies.player,
+      gameID: cookies.gameid,
+      board: boardTiles,
+      rack: playerTiles
+    })
+    .then(res => {
+      console.log(res)
+      socket.emit('moveSubmitEvent', {room: `game-${cookies.gameid}`, playerID: cookies.player})
+    })
+    .catch(err => {
+      console.log(err)
+    })
+    .finally(() => {
       setTilesLoading(false)
     })
+
   };
 
   return (
     <div className="Game">
       <div className="gamearea">
         <GameInfoView gameInfos={infos} isLoading={infosLoading} />
-        <Grid size={GRIDSIZE} tiles={boardTiles} />
-        <Rack size={RACKSIZE} tiles={playerTiles} onReset={onReset} onSubmit={onSubmit} isLoading={tilesLoading} />
+        <Grid size={7} tiles={boardTiles} />
+        <Rack size={7} tiles={playerTiles} onReset={onReset} onSubmit={onSubmit} isLoading={tilesLoading} />
       </div>
-      <div>{infos && `ID: ${infos?.id}`}</div>
-      <div>{infos && `creatorID: ${infos?.creatorID}`}</div>
+      <div style={{ textAlign: 'right' }}>
+        <div>
+          {'ID: '}{!infosLoading && infos?.id}
+        </div>
+        <div>
+          {'creatorID: '}{!infosLoading && infos?.creatorID}
+        </div>
+      </div>
       <Button onClick={trigger}>Refresh</Button>
     </div>
   );
-}
+};
 
 export default Game;

@@ -25,7 +25,7 @@ const GameInfoViewCard = ({ gameInfo, isLoading }) => {
               {"Nom: "}{gameInfo.name}
             </p>
             <p>
-              {"Joueurs: "}{gameInfo.nbPlayers}
+              {"Nombre de places: "}{gameInfo.players.length + "/" + gameInfo.nbPlayers}
             </p>
             <Button onClick={joinGameLobby}>Rejoindre Lobby</Button>
           </div>

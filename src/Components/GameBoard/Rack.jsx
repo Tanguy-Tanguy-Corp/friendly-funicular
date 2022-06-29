@@ -15,7 +15,6 @@ justify-content: center;
 `
 
 const Rack = ({ tiles, size, onReset, onSubmit, isLoading }) => {
-
   const rackCells = new Array(size**2);
   for (var i=0; i < size; i++) {
     rackCells[i] = { pos: i };

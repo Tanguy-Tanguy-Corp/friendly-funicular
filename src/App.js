@@ -15,14 +15,16 @@ function App() {
 
   useEffect(() => {
     if (cookies.player) {
+      console.log('cookie player found, set player context')
       setPlayerIsLoading(true);
-      API.get(`player/${cookies.player}`).then(res => {
-        console.log('fetchPlayer');
+      API.get(`player/${cookies.player}`)
+      .then(res => {
         setPlayer(res.data);
-        setPlayerIsLoading(false);
       })
+      .catch(err => console.log(err))
+      .finally(() => setPlayerIsLoading(false))
     } else {
-      console.log('remove user context')
+      console.log('no cookie player, reset player context')
       setPlayer(null)
     }
   }, [cookies.player])
