@@ -9,25 +9,26 @@ import API from './services/API';
 import './css/App.css'
 
 function App() {
-  const [cookies] = useCookies(['playerId'])
-  const [player, setPlayer] = useState(null)
-  const [playerIsLoading, setPlayerIsLoading] = useState(false)
+  const [cookies] = useCookies(['playerId']);
+  const [player, setPlayer] = useState(null);
+  const [playerIsLoading, setPlayerIsLoading] = useState(false);
 
   useEffect(() => {
     if (cookies.playerId) {
-      console.log('cookie player found, set player context')
+      console.log('Player context updating');
       setPlayerIsLoading(true);
       API.get(`player/${cookies.playerId}`)
       .then(res => {
-        setPlayer(res.data);
+        const player = res.data;
+        setPlayer(player);
       })
       .catch(err => console.log(err))
-      .finally(() => setPlayerIsLoading(false))
+      .finally(() => setPlayerIsLoading(false));
     } else {
-      console.log('no cookie player, reset player context')
-      setPlayer(null)
+      console.log('Player context emptying');
+      setPlayer(null);
     }
-  }, [cookies.playerId])
+  }, [cookies.playerId]);
 
   return (
     <SocketContext.Provider value={ socket }>
@@ -46,7 +47,7 @@ function App() {
       </BrowserRouter>
       </PlayerContext.Provider>
     </SocketContext.Provider>
-  )
-}
+  );
+};
 
 export default App;

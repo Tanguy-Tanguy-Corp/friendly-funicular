@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+
+// TODO: To use or to not use ?
 
 const backendURL = process.env.REACT_APP_BACKEND_URL;
 
@@ -22,7 +24,7 @@ const useAxios = (initialEndPoint, initialOptions={}) => {
     setIsLoading(true);
     try {
       API(endPoint, options).then(res => {
-        if (res.statusText === "OK") {
+        if (res.statusText === 'OK') {
           setData(res.data)
         } else {
           setIsError(true)

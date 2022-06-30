@@ -1,39 +1,39 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { Button, Form, Input, Radio, Typography } from 'antd';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 import API from '../services/API';
 import '../css/Create.css';
 
-const { Title, Link } = Typography;
+const { Title } = Typography;
 
 const Create = () => {
-  let navigate = useNavigate()
-  const [gameLoading, setGameLoading] = useState(false)
+  let navigate = useNavigate();
+  const [gameLoading, setGameLoading] = useState(false);
   const [cookies, setCookie] = useCookies(['gameId', 'playerId']);
 
-  // Redirect to home, if necessary cookies are missing
+  // Redirect to home, if player is undefined
   useEffect(() => {
-    if (!cookies.playerId) {
-      navigate('/');
-      return;
-    }
-  }, [cookies, navigate])
+    if (!cookies.playerId) navigate('/');
+  }, [cookies.playerId, navigate]);
 
   const createGame = useCallback(async (values) => {
-    setGameLoading(true)
-    API.post('game', { creatorID: cookies.playerId, name: values.name, nbPlayers: parseInt(values.nbPlayers) }).then(res => {
-      console.log('gameCreate')
-      setGameLoading(false)
-      setCookie('gameId', res.data.id, { path: '/' });
-      navigate('/lobby')
+    console.log('gameCreate');
+    setGameLoading(true);
+    API.post('game', { creatorID: cookies.playerId, name: values.name, nbPlayers: parseInt(values.nbPlayers) })
+    .then(res => {
+      const game = res.data
+      setCookie('gameId', game.id, { path: '/' });
+      navigate('/lobby');
     })
-  }, [cookies.playerId, navigate, setCookie])
+    .catch(err => console.log(err))
+    .finally(() => setGameLoading(false));
+  }, [cookies.playerId, navigate, setCookie]);
 
   return (
     <div>
       <Title>Créer une nouvelle partie</Title>
-      {cookies.gameId && <Link href={'/game'} strong type='warning'>{`Attention vous êtes déja dans une partie en cours (game ID: ${cookies.gameId})`}</Link>}
+      {/* {cookies.gameId && <Link href={'/game'} strong type='warning'>{`Attention vous êtes déja dans une partie en cours (game ID: ${cookies.gameId})`}</Link>} */}
         <Form name="basic" labelCol={{ span: 4 }} wrapperCol={{ span: 4 }} initialValues={{ remember: true }} onFinish={createGame}  autoComplete="off">
           <Form.Item label="Nom de la partie" name="name" rules={ [{ required: true, message: 'Merci de fournir un nom de partie!' }] }>
             <Input />
