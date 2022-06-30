@@ -13,7 +13,7 @@ justify-content: space-evenly;
 
 const Home = () => {
 
-  const [cookies] = useCookies(['player'])
+  const [cookies] = useCookies(['playerId'])
 
   let navigate = useNavigate();
   const onCreate = () => {
@@ -28,10 +28,10 @@ const Home = () => {
     <Title>Bienvenue à Scrabbln't</Title>
     <PlayerCreateCard/>
     <ButtonDiv>
-      <Button type="primary" shape="round" size='large' onClick={onCreate} disabled={!cookies.player}>
+      <Button type="primary" shape="round" size='large' onClick={onCreate} disabled={!cookies.playerId}>
         Créer une partie
       </Button>
-      <Button type="primary" shape="round" size='large' onClick={onJoin} disabled={!cookies.player}>
+      <Button type="primary" shape="round" size='large' onClick={onJoin} disabled={!cookies.playerId}>
         Rejoindre une partie
       </Button>
     </ButtonDiv>

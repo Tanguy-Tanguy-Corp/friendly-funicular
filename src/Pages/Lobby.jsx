@@ -16,7 +16,7 @@ const CardsDiv = styled.div`
 
 const Lobby = () => {
   const socket = useContext(SocketContext)
-  const [cookies] = useCookies(['gameid', 'player']);
+  const [cookies] = useCookies(['gameId', 'playerId']);
   const [infos, setInfos] = useState(null)
   const [infosLoading, setInfosLoading] = useState(false)
   const [joinLoading, setJoinLoading] = useState(false)
@@ -33,7 +33,7 @@ const Lobby = () => {
   
   // Redirect to home, if necessary cookies are missing
   useEffect(() => {
-    if (!cookies.player || !cookies.gameid) {
+    if (!cookies.playerId || !cookies.gameId) {
       navigate('/');
       return;
     }
@@ -42,26 +42,26 @@ const Lobby = () => {
   // Fetch game info (refetch on infoUdate socket event)
   useEffect(() => {
     setInfosLoading(true)
-    API.get(`game/${cookies.gameid}`)
+    API.get(`game/${cookies.gameId}`)
       .then(res => {
         console.log('lobby infoDoc')
         console.log(res)
         setInfos(res.data)
         const playerIDs = res.data.players.map(player => player.id)
-        setIsIn(playerIDs.includes(cookies.player))
+        setIsIn(playerIDs.includes(cookies.playerId))
         console.log(playerIDs)
       })
       .catch((err) => {
         errorMsg(err);
       })
       .finally(() => setInfosLoading(false))
-  }, [cookies.gameid, cookies.player, refetchTrigger])
+  }, [cookies.gameId, cookies.playerId, refetchTrigger])
 
   const joinGame = async () => {
     setJoinLoading(true);
-    API.put(`player/join`, { playerID: cookies.player, gameID: cookies.gameid })
+    API.put(`player/join`, { playerID: cookies.playerId, gameID: cookies.gameId })
       .then(() => {
-        socket.emit('playerJoinEvent', {room: `lobby-${cookies.gameid}`, playerID: cookies.player})
+        socket.emit('playerJoinEvent', {room: `lobby-${cookies.gameId}`, playerID: cookies.playerId})
       })
       .catch((err) => errorMsg(err))
       .finally(() => setJoinLoading(false))
@@ -70,9 +70,9 @@ const Lobby = () => {
 
   const leaveGame = () => {
     setLeaveLoading(true);
-    API.put(`player/leave`, { playerID: cookies.player, gameID: cookies.gameid })
+    API.put(`player/leave`, { playerID: cookies.playerId, gameID: cookies.gameId })
       .then(() => {
-        socket.emit('playerLeaveEvent', {room: `lobby-${cookies.gameid}`, playerID: cookies.player})
+        socket.emit('playerLeaveEvent', {room: `lobby-${cookies.gameId}`, playerID: cookies.playerId})
       })
       .catch((err) => errorMsg(err))
       .finally(() => setLeaveLoading(false))
@@ -82,9 +82,9 @@ const Lobby = () => {
   const startGame = () => {
     // Emit a gameStart socket event to provoke the starting of the game
     setStartLoading(true)
-    API.post('play/start', { gameID: cookies.gameid, playerID: cookies.player })
+    API.post('play/start', { gameID: cookies.gameId, playerID: cookies.playerId })
     .then(() => {
-      socket.emit('gameStartEvent', {room: `lobby-${cookies.gameid}`})
+      socket.emit('gameStartEvent', {room: `lobby-${cookies.gameId}`})
       navigate('/game')
     })
     .catch((err) => errorMsg(err))
@@ -103,13 +103,13 @@ const Lobby = () => {
 
   // Subscribe to infoUpdate socket event, and join socket lobby room
   useEffect(() => {
-    socket.emit('join', {room: `lobby-${cookies.gameid}`});
+    socket.emit('join', {room: `lobby-${cookies.gameId}`});
     socket.on('infoUpdate', handleInfoUpdate);
     return(() => {
-      socket.emit('leave', {room: `lobby-${cookies.gameid}`});
+      socket.emit('leave', {room: `lobby-${cookies.gameId}`});
       socket.off('infoUpdate', handleInfoUpdate);
     })
-  }, [cookies.gameid, cookies.player, handleInfoUpdate, socket])
+  }, [cookies.gameId, cookies.playerId, handleInfoUpdate, socket])
 
   // TODO: implement kick function for game creator
   const kick = () => {
@@ -146,7 +146,7 @@ const Lobby = () => {
             Quitter la partie
           </Button>
         }
-        <Button type="primary" shape="round" size='large' disabled={infos?.creatorID !== cookies.player} loading={startLoading} onClick={startGame}>
+        <Button type="primary" shape="round" size='large' disabled={infos?.creatorID !== cookies.playerId} loading={startLoading} onClick={startGame}>
           Démarrer la partie
         </Button>
       </div>

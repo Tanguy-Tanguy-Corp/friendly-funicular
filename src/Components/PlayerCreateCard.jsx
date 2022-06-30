@@ -13,15 +13,15 @@ const PlayerCreateCard = () => {
 
   const [playerLoading, setPlayerLoading] = useState(false)
   const [player, setPlayer] = useState(null)
-  const [cookies, setCookie, removeCookie] = useCookies(['player'])
+  const [cookies, setCookie, removeCookie] = useCookies(['playerId'])
 
   const createDeletePlayer = useCallback(async(values) => {
     setPlayerLoading(true)
-    if (cookies.player) {
-      API.delete(`player/${cookies.player}`)
+    if (cookies.playerId) {
+      API.delete(`player/${cookies.playerId}`)
       .then(() => {
         console.log('deletePlayer');
-        removeCookie('player', { path: '/' });
+        removeCookie('playerId', { path: '/' });
         setPlayer(null);
       })
       .catch((err) => console.log(err))
@@ -30,18 +30,18 @@ const PlayerCreateCard = () => {
       API.post(`player`, { pseudo: values.pseudo }).then(res => {
         console.log('createPlayer');
         setPlayer(res.data);
-        setCookie('player', res.data.id, { path: '/' });
+        setCookie('playerId', res.data.id, { path: '/' });
       })
       .catch((err) => console.log(err))
       .finally(() => setPlayerLoading(false))
     };
-  }, [cookies.player, removeCookie, setCookie]);
+  }, [cookies.playerId, removeCookie, setCookie]);
 
   // If player already exists, fetch it
   useEffect(() => {
-    if (cookies.player) {
+    if (cookies.playerId) {
       setPlayerLoading(true)
-      API.get(`player/${cookies.player}`).then(res => {
+      API.get(`player/${cookies.playerId}`).then(res => {
         console.log('get player')
         setPlayer(res.data)
       })
@@ -57,7 +57,7 @@ const PlayerCreateCard = () => {
       <Card style={{ width: 300 }}>
         <Form onFinish={createDeletePlayer}>
           {
-            !cookies.player
+            !cookies.playerId
             ?
             <Form.Item label='Pseudo' name='pseudo' rules={[{ required: true, message: 'Veuillez entrer votre pseudo'}]}>
               <Input/>
@@ -72,8 +72,8 @@ const PlayerCreateCard = () => {
               </div>
             </>
           }
-          <Button type="primary" danger={cookies.player} loading={playerLoading} htmlType="submit">
-            {cookies.player ? 'Supprimer Pseudo' : 'Creér Pseudo'}
+          <Button type="primary" danger={cookies.playerId} loading={playerLoading} htmlType="submit">
+            {cookies.playerId ? 'Supprimer Pseudo' : 'Creér Pseudo'}
           </Button>
         </Form>
       </Card>

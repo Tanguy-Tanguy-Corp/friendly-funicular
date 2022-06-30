@@ -9,14 +9,14 @@ const { Title, Text } = Typography;
 
 const Select = () => {
   let navigate = useNavigate()
-  const [cookies, setCookie] = useCookies(['gameid', 'player']);
+  const [cookies, setCookie] = useCookies(['gameId', 'playerId']);
   const [errorMsg, setErrorMsg] = useState(null);
   const [gameInfos, setGameInfos] = useState(null);
   const [gameInfosLoading, setGameInfosLoading] = useState(true)
 
   // Redirect to home, if necessary cookies are missing
   useEffect(() => {
-    if (!cookies.player) {
+    if (!cookies.playerId) {
       navigate('/');
       return;
     }
@@ -39,7 +39,7 @@ const Select = () => {
       setErrorMsg("Cette partie n'existe pas")
       return
     }
-    setCookie('gameid', values.gameid, { path: '/' });
+    setCookie('gameId', values.gameid, { path: '/' });
     navigate('/lobby')
   };
 

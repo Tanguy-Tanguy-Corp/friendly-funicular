@@ -42,11 +42,11 @@ const MainLayout = ({ children }) => {
 
 const SiderMenu = () => {
   const [menuItems, setMenuItems] = useState([])
-  const [cookies] = useCookies(['gameid', 'dev', 'player']);
+  const [cookies] = useCookies(['gameId', 'dev', 'playerId']);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (cookies.gameid && cookies.player) {
+    if (cookies.gameId && cookies.playerId) {
       setMenuItems([
         { label: 'Acceuil', key: '', icon: <HomeOutlined />},
         { label: 'Partie en cours', key: 'game', icon: <HomeOutlined />}

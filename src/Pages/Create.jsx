@@ -10,11 +10,11 @@ const { Title, Link } = Typography;
 const Create = () => {
   let navigate = useNavigate()
   const [gameLoading, setGameLoading] = useState(false)
-  const [cookies, setCookie] = useCookies(['gameid', 'player']);
+  const [cookies, setCookie] = useCookies(['gameId', 'playerId']);
 
   // Redirect to home, if necessary cookies are missing
   useEffect(() => {
-    if (!cookies.player) {
+    if (!cookies.playerId) {
       navigate('/');
       return;
     }
@@ -22,18 +22,18 @@ const Create = () => {
 
   const createGame = useCallback(async (values) => {
     setGameLoading(true)
-    API.post('game', { creatorID: cookies.player, name: values.name, nbPlayers: parseInt(values.nbPlayers) }).then(res => {
+    API.post('game', { creatorID: cookies.playerId, name: values.name, nbPlayers: parseInt(values.nbPlayers) }).then(res => {
       console.log('gameCreate')
       setGameLoading(false)
-      setCookie('gameid', res.data.id, { path: '/' });
+      setCookie('gameId', res.data.id, { path: '/' });
       navigate('/lobby')
     })
-  }, [cookies.player, navigate, setCookie])
+  }, [cookies.playerId, navigate, setCookie])
 
   return (
     <div>
       <Title>Créer une nouvelle partie</Title>
-      {cookies.gameid && <Link href={'/game'} strong type='warning'>{`Attention vous êtes déja dans une partie en cours (game ID: ${cookies.gameid})`}</Link>}
+      {cookies.gameId && <Link href={'/game'} strong type='warning'>{`Attention vous êtes déja dans une partie en cours (game ID: ${cookies.gameId})`}</Link>}
         <Form name="basic" labelCol={{ span: 4 }} wrapperCol={{ span: 4 }} initialValues={{ remember: true }} onFinish={createGame}  autoComplete="off">
           <Form.Item label="Nom de la partie" name="name" rules={ [{ required: true, message: 'Merci de fournir un nom de partie!' }] }>
             <Input />

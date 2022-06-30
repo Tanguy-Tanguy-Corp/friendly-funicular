@@ -10,7 +10,7 @@ import API from "../services/API";
 const Game = () => {
   const socket = useContext(SocketContext);
   let navigate = useNavigate();
-  const [cookies] = useCookies(['gameid', 'player']);
+  const [cookies] = useCookies(['gameId', 'playerId']);
 
   const [tiles, setTiles] = useState(null);
   const [tilesLoading, setTilesLoading] = useState(false);
@@ -28,7 +28,7 @@ const Game = () => {
 
   // Redirect to home, if necessary cookies are missing
   useEffect(() => {
-    if (!cookies.player || !cookies.gameid) {
+    if (!cookies.playerId || !cookies.gameId) {
       navigate('/');
     };
   }, [cookies, navigate]);
@@ -40,23 +40,23 @@ const Game = () => {
 
   // Subscribe to socket events, and join game room
   useEffect(() => {
-    socket.emit('close_room', {room: `lobby-${cookies.gameid}`});
-    socket.emit('join', {room: `game-${cookies.gameid}`});
+    socket.emit('close_room', {room: `lobby-${cookies.gameId}`});
+    socket.emit('join', {room: `game-${cookies.gameId}`});
     socket.on('gameUpdate', handleGameUpdate);
     return(() => {
-      socket.emit('leave', {room: `game-${cookies.gameid}`});
+      socket.emit('leave', {room: `game-${cookies.gameId}`});
       socket.off('gameUpdate', handleGameUpdate);
     });
-  }, [cookies.gameid, handleGameUpdate, socket]);
+  }, [cookies.gameId, handleGameUpdate, socket]);
 
   // Infos Fetching
   useEffect(() => {
     setInfosLoading(true);
-    API.get(`game/${cookies.gameid}`)
+    API.get(`game/${cookies.gameId}`)
     .then(res => {
       const infos = res.data
       setInfos(infos)
-      if (infos.turnPlayerId === cookies.player) {
+      if (infos.turnPlayerId === cookies.playerId) {
         setIsMyTurn(true)
         myTurnMsg()
       } else {
@@ -67,12 +67,12 @@ const Game = () => {
     }).finally(() => {
       setInfosLoading(false)
     })
-  }, [cookies.gameid, cookies.player, refetchTrigger]);
+  }, [cookies.gameId, cookies.playerId, refetchTrigger]);
 
   // Tiles Fecthing
   useEffect(() => {
     setTilesLoading(true)
-    API.get(`tile/${cookies.gameid}/${cookies.player}`).then(res => {
+    API.get(`tile/${cookies.gameId}/${cookies.playerId}`).then(res => {
       const data = res.data;
       const rack = data.rack.tiles
       const board = data.board
@@ -84,7 +84,7 @@ const Game = () => {
     }).finally(() => {
       setTilesLoading(false)
     })
-  }, [cookies.gameid, cookies.player, refetchTrigger]);
+  }, [cookies.gameId, cookies.playerId, refetchTrigger]);
 
   // Separate rack and board tiles
   useEffect(() => {
@@ -261,14 +261,14 @@ const Game = () => {
     setTilesLoading(true)
     submitMoveMsg()
     API.put('play/submit', {
-      playerID: cookies.player,
-      gameID: cookies.gameid,
+      playerID: cookies.playerId,
+      gameID: cookies.gameId,
       board: boardTiles,
       rack: playerTiles
     })
     .then(res => {
       console.log(res)
-      socket.emit('moveSubmitEvent', {room: `game-${cookies.gameid}`, playerID: cookies.player})
+      socket.emit('moveSubmitEvent', {room: `game-${cookies.gameId}`, playerID: cookies.playerId})
       validMoveMsg()
     })
     .catch(err => {

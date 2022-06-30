@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from 'react-cookie';
 const GameInfoViewCard = ({ gameInfo, isLoading }) => {
   let navigate = useNavigate();
-  const [, setCookie] = useCookies(['gameid', 'player']);
+  const [, setCookie] = useCookies(['gameId', 'playerId']);
 
   const joinGameLobby = () => {
-    setCookie('gameid', gameInfo.id, { path: '/' });
+    setCookie('gameId', gameInfo.id, { path: '/' });
     navigate('/lobby')
   }
 

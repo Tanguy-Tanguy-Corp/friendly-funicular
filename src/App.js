@@ -9,15 +9,15 @@ import API from './services/API';
 import './css/App.css'
 
 function App() {
-  const [cookies] = useCookies(['player'])
+  const [cookies] = useCookies(['playerId'])
   const [player, setPlayer] = useState(null)
   const [playerIsLoading, setPlayerIsLoading] = useState(false)
 
   useEffect(() => {
-    if (cookies.player) {
+    if (cookies.playerId) {
       console.log('cookie player found, set player context')
       setPlayerIsLoading(true);
-      API.get(`player/${cookies.player}`)
+      API.get(`player/${cookies.playerId}`)
       .then(res => {
         setPlayer(res.data);
       })
@@ -27,7 +27,7 @@ function App() {
       console.log('no cookie player, reset player context')
       setPlayer(null)
     }
-  }, [cookies.player])
+  }, [cookies.playerId])
 
   return (
     <SocketContext.Provider value={ socket }>
