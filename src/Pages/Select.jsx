@@ -35,8 +35,8 @@ const Select = () => {
   
 
   const onFinish = (values) => {
-    const gameIDs = gameInfos.map(gameInfo => gameInfo.id);
-    if (!gameIDs.includes(values.gameid)) {
+    const gameIds = gameInfos.map(gameInfo => gameInfo.id);
+    if (!gameIds.includes(values.gameid)) {
       setErrorMsg('Cette partie n\'existe pas');
       return;
     };

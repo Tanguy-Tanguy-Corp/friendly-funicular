@@ -36,7 +36,7 @@ const Lobby = () => {
   // Redirect to home, if game or player is undefined
   useEffect(() => {
     if (!cookies.playerId || !cookies.gameId) navigate('/');
-    setLobbyData({ playerID: cookies.playerId, gameID: cookies.gameId })
+    setLobbyData({ playerId: cookies.playerId, gameId: cookies.gameId })
   }, [cookies.playerId, cookies.gameId, navigate]);
 
   // Infos fetching
@@ -45,9 +45,9 @@ const Lobby = () => {
     API.get(`game/${cookies.gameId}`)
       .then(res => {
         const infos = res.data;
-        const playerIDs = infos.players.map(player => player.id);
+        const playerIds = infos.players.map(player => player.id);
         setInfos(infos);
-        setIsIn(playerIDs.includes(cookies.playerId));
+        setIsIn(playerIds.includes(cookies.playerId));
       })
       .catch(err => errorMsg(err))
       .finally(() => setInfosLoading(false));

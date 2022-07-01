@@ -244,14 +244,14 @@ const Game = () => {
     setTilesLoading(true);
     submitMoveMsg();
     API.put('play/submit', {
-      playerID: cookies.playerId,
-      gameID: cookies.gameId,
+      playerId: cookies.playerId,
+      gameId: cookies.gameId,
       board: boardTiles,
       rack: rackTiles
     })
     .then(res => {
       console.log(res);
-      socket.emit('moveSubmitEvent', {room: `game-${cookies.gameId}`, playerID: cookies.playerId});
+      socket.emit('moveSubmitEvent', {room: `game-${cookies.gameId}`, playerId: cookies.playerId});
       validMoveMsg();
     })
     .catch(err => {
