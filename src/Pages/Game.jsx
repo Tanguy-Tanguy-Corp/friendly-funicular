@@ -262,7 +262,7 @@ const Game = () => {
   };
 
   return (
-    <div className='Game'>
+    <>
       <div className='gamearea'>
         <GameInfoView gameInfos={infos} isLoading={infosLoading} />
         <Grid size={infos?.gridSize} tiles={boardTiles} />
@@ -276,7 +276,7 @@ const Game = () => {
           {'creatorID: '}{!infosLoading && infos?.creatorID}
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

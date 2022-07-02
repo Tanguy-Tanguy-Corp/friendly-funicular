@@ -101,7 +101,7 @@ const Lobby = () => {
   }, [cookies.gameId, handleInfoUpdate, socket]);
 
   return (
-    <div>
+    <>
       <Title>
         Lobby {infosLoading && <Spin />}
       </Title>
@@ -142,7 +142,7 @@ const Lobby = () => {
           {'creatorID: '}{infos?.creatorID}
         </div>
       </div>
-    </div>
+    </>
   )
 }
 

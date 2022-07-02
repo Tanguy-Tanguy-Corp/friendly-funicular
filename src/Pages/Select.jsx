@@ -45,7 +45,7 @@ const Select = () => {
   };
 
   return (
-    <div>
+    <>
       <Title>Rejoindre une partie</Title>
       {
       gameInfosLoading
@@ -73,7 +73,7 @@ const Select = () => {
           </Button>
         </Form.Item>
       </Form>
-    </div>
+    </>
   );
 };
 

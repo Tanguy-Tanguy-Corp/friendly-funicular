@@ -20,7 +20,7 @@ const Home = () => {
   const navJoin = () => navigate('/select');
   
   return (
-    <div>
+    <>
     <Title>Bienvenue à Scrabbln't</Title>
     <PlayerCreateCard/>
     <ButtonDiv>
@@ -31,7 +31,7 @@ const Home = () => {
         Rejoindre une partie
       </Button>
     </ButtonDiv>
-  </div>
+  </>
   );
 };
 

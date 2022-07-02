@@ -31,7 +31,7 @@ const Create = () => {
   }, [cookies.playerId, navigate, setCookie]);
 
   return (
-    <div>
+    <>
       <Title>Créer une nouvelle partie</Title>
       {/* {cookies.gameId && <Link href={'/game'} strong type='warning'>{`Attention vous êtes déja dans une partie en cours (game ID: ${cookies.gameId})`}</Link>} */}
         <Form name="basic" labelCol={{ span: 4 }} wrapperCol={{ span: 4 }} initialValues={{ remember: true }} onFinish={createGame}  autoComplete="off">
@@ -57,7 +57,7 @@ const Create = () => {
           </Button>
         </Form.Item>
       </Form>
-    </div>
+    </>
   );
 };
 
