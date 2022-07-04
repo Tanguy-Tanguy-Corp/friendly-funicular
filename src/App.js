@@ -42,6 +42,7 @@ function App() {
             <Route exact path='game' element={<Game />} />
             <Route exact path='create' element={<Create />} />
             <Route exact path='socket' element={<SocketIOTest />} />
+            <Route path="*" element={<Home />} />
           </Routes>
         </MainLayout>
       </BrowserRouter>
